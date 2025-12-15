@@ -1,7 +1,13 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import os
 import pyrebase
+
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
+from . models import User, Notification
 
 import firebase_admin
 from firebase_admin import credentials, auth
@@ -22,10 +28,10 @@ authe = firebase.auth()
 database = firebase.database()
 
 # Initialize Firebase once (e.g., in settings.py or a startup file)
-service_account_info = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
-# cred = credentials.Certificate("serviceAccountKey.json")
-cred = credentials.Certificate(service_account_info)
-# firebase_admin.initialize_app(cred)
+# service_account_info = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
+cred = credentials.Certificate("serviceAccountKey.json")
+# cred = credentials.Certificate(service_account_info)
+# firebase_admin.initialize_app(cred)s
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
@@ -50,3 +56,103 @@ def verify_firebase_token(view_func):
 
 def index(request):
     return HttpResponse("This Ambumeadow index page.!")
+
+
+# start of siginin
+@api_view(['POST'])
+def signin(request):
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    try:
+        # Try Firebase sign in
+        login = authe.sign_in_with_email_and_password(email, password)
+        id_token = login["idToken"]
+
+        # Get account info
+        info = authe.get_account_info(id_token)
+        email_verified = info["users"][0]["emailVerified"]
+
+        if not email_verified:
+            # Resend verification email
+            authe.send_email_verification(id_token)
+
+            return JsonResponse({
+                "message": "Email not verified. Verification link has been sent again."
+            }, status=403)
+
+        # Email verified → Continue login
+        uid = info["users"][0]["localId"]
+        db_user = User.objects.filter(firebase_uid=uid).first()
+        # log user action
+        # logger.info(f"User sign in: Email: {email}, Name: {db_user.full_name}")
+
+        return JsonResponse({
+            "message": "Login successful",
+            "access_token": id_token,
+            "user": {
+                "user_id": db_user.id,
+                "user_name": db_user.full_name,
+                "user_email": db_user.email,
+                "phone_number": db_user.phone_number,
+                "phone_verified": db_user.phone_verified,
+                "profile_image": db_user.profile_image,
+                "date_joined": db_user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({"message": "Invalid login", "error": str(e)}, status=401)
+# end
+
+# start of signup
+@csrf_exempt
+@api_view(['POST'])
+def signup(request):
+    data = request.data
+    full_name = data.get("full_name")
+    phone_number = data.get("phone_number")
+    email = data.get("email")
+    password = data.get("password")
+
+    if not all([full_name, phone_number, email, password]):
+        return JsonResponse({"message": "Missing fields"}, status=400)
+
+    # check if email already exists in firebase
+    try:
+        existing_user = authe.get_user_by_email(email)
+        return JsonResponse({"message": "Email already exists"}, status=400)
+    except:
+        pass  # user does not exist, continue
+
+    try:
+        # Create user in Firebase
+        user = authe.create_user_with_email_and_password(email, password)
+
+        # Send verification email
+        authe.send_email_verification(user['idToken'])
+
+        # Save profile to Django database (NO PASSWORD)
+        uid = user["localId"]
+        User.objects.create(
+            firebase_uid=uid,
+            full_name=full_name,
+            phone_number=phone_number,
+            email=email
+        )
+        # log user action
+        # logger.info(f"User sign up: Email: {email}, Name: {full_name}")
+
+        # create welcome notification
+        db_user = User.objects.get(firebase_uid=uid)
+        Notification.objects.create(
+            user=db_user,
+            message="Welcome to Ambumeadow! Your account has been created successfully.",
+            is_read=False
+        )
+
+        return JsonResponse({"message": "Account created. Check your email to verify."}, status=201)
+
+    except Exception as e:
+        return JsonResponse({"message": "Signup failed", "error": str(e)}, status=400)
+# end

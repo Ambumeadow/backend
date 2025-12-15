@@ -78,3 +78,13 @@ class MedicalRecord(models.Model):
 
     def __str__(self):
         return f"{self.patient.user.full_name} Date: ({self.date})"
+
+# notification model
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user.full_name} Date: ({self.date})"
