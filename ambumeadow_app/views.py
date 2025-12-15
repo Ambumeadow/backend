@@ -28,9 +28,9 @@ authe = firebase.auth()
 database = firebase.database()
 
 # Initialize Firebase once (e.g., in settings.py or a startup file)
-# service_account_info = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
-cred = credentials.Certificate("serviceAccountKey.json")
-# cred = credentials.Certificate(service_account_info)
+service_account_info = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
+# cred = credentials.Certificate("serviceAccountKey.json")
+cred = credentials.Certificate(service_account_info)
 # firebase_admin.initialize_app(cred)s
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
@@ -155,4 +155,62 @@ def signup(request):
 
     except Exception as e:
         return JsonResponse({"message": "Signup failed", "error": str(e)}, status=400)
+# end
+
+
+# api to mark phone as verified
+@api_view(['POST'])
+@verify_firebase_token
+def verify_phone(request):
+    firebase_uid = request.firebase_uid
+
+    try:
+        user = User.objects.get(firebase_uid=firebase_uid)
+        user.phone_verified = True
+        user.save()
+
+        # send notification
+        Notification.objects.create(
+            user=user,
+            message="Phone number verified successfully.",
+            is_read=False
+        )
+
+        return JsonResponse({"message": "Phone number verified successfully"}, status=200)
+
+    except User.DoesNotExist:
+        return JsonResponse({"message": "User not found"}, status=404)
+# end of phone verification api
+
+# start of delete account api
+@api_view(['DELETE'])
+@verify_firebase_token
+def delete_account(request):
+    firebase_uid = request.firebase_uid
+
+    # 1. Delete from Firebase Auth
+    try:
+        auth.delete_user(firebase_uid)
+        print("Firebase user deleted")
+    except Exception as e:
+        print("Firebase delete error:", e)
+
+    # 2. Delete from Django database
+    user = User.objects.filter(firebase_uid=firebase_uid).first()
+    if user:
+        user.delete()
+
+    return JsonResponse({"message": "Account deleted successfully"}, status=200)
+# end
+
+# request password reset api
+@api_view(['POST'])
+def request_password_reset(request):
+    email = request.data.get("email")
+
+    try:
+        authe.send_password_reset_email(email)
+        return JsonResponse({"message": "Password reset email sent"})
+    except Exception as e:
+        return JsonResponse({"message": "Error sending reset email", "error": str(e)}, status=400)
 # end
