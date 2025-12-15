@@ -83,6 +83,21 @@ DATABASES = {
     }
 }
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER': os.environ.get("DATABASE_USER"),
+        'PASSWORD': os.environ.get("DATABASE_PASSWORD"),
+        'HOST': os.environ.get("DATABASE_HOST"),
+        'PORT': os.environ.get("DATABASE_PORT"),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
+    }
+}
+
+# psql -h aws-1-eu-central-1.pooler.supabase.com -p 5432 -d postgres -U postgres.vqmjpaejqhfpztrezyrx
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
