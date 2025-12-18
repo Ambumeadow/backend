@@ -110,12 +110,15 @@ def signin(request):
 @api_view(['POST'])
 def signup(request):
     data = request.data
-    full_name = data.get("full_name")
+    first_name = data.get("first_name", "").strip()
+    last_name = data.get("last_name", "").strip()
+    full_name = f"{first_name} {last_name}".strip()
     phone_number = data.get("phone_number")
     email = data.get("email")
     password = data.get("password")
+    agreed = data.get("agreed")
 
-    if not all([full_name, phone_number, email, password]):
+    if not all([full_name, phone_number, email, password, agreed]):
         return JsonResponse({"message": "Missing fields"}, status=400)
 
     # check if email already exists in firebase
@@ -129,21 +132,22 @@ def signup(request):
         # Create user in Firebase
         user = authe.create_user_with_email_and_password(email, password)
 
-        # Send verification email
+        # # Send verification email
         authe.send_email_verification(user['idToken'])
 
-        # Save profile to Django database (NO PASSWORD)
+        # # Save profile to Django database (NO PASSWORD)
         uid = user["localId"]
         User.objects.create(
             firebase_uid=uid,
             full_name=full_name,
             phone_number=phone_number,
-            email=email
+            email=email,
+            agreed=agreed
         )
-        # log user action
-        # logger.info(f"User sign up: Email: {email}, Name: {full_name}")
+        # # log user action
+        # # logger.info(f"User sign up: Email: {email}, Name: {full_name}")
 
-        # create welcome notification
+        # # create welcome notification
         db_user = User.objects.get(firebase_uid=uid)
         Notification.objects.create(
             user=db_user,

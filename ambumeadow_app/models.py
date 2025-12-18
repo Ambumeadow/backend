@@ -8,6 +8,7 @@ class User(models.Model):
     full_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=100, default="johndoe@example.com")
+    agreed = models.BooleanField(default=False)
     firebase_uid = models.CharField(max_length=256, default="@Ambumeadow2025")
     current_lat = models.FloatField(null=True, blank=True, default=0.0)
     current_lng = models.FloatField(null=True, blank=True, default=0.0)
