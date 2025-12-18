@@ -82,10 +82,18 @@ class MedicalRecord(models.Model):
 
 # notification model
 class Notification(models.Model):
+    TYPES = [
+        ('appointment','Appointment'),
+        ('system','System'),
+        ('prescription','Prescription'),
+        ('update','Update'),
+        ('order','Order'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
+    message_type = models.CharField(max_length=20, choices=TYPES, default='update')
     is_read = models.BooleanField(default=False)
     date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.user.full_name} Date: ({self.date})"
+        return f"{self.user.full_name} {self.message_type} Date: ({self.date})"

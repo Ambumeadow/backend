@@ -8,4 +8,5 @@ urlpatterns = [
     path('verify_phone/', views.verify_phone, name='verify_phone'),
     path('delete_account/', views.delete_account, name='delete_account'),
     path('request_password_reset/', views.request_password_reset, name='request_password_reset'),
+    path('get_user_notifications/<int:user_id>/', views.get_user_notifications, name='get_user_notifications'),
 ]
