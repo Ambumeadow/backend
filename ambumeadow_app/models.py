@@ -16,7 +16,7 @@ class User(models.Model):
     is_active = models.BooleanField(default=True)
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_expiry = models.DateTimeField(null=True, blank=True)
-    profile_image = models.URLField(blank=True, null=True, default='https://res.cloudinary.com/dc68huvjj/image/upload/v1748119193/zzy3zwrius3kjrzp4ifc.png')
+    profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
     date_joined = models.DateTimeField(default=timezone.now)
     expo_token = models.CharField(max_length=100, default="hsvsx92jjs")
 
