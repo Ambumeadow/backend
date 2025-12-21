@@ -39,12 +39,14 @@ class Staff(models.Model):
     full_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=100, default="johndoe@example.com")
+    id_number = models.CharField(max_length=8, default='12345678')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='other')
     firebase_uid = models.CharField(max_length=256, default="@Ambumeadow2025")
     phone_verified = models.BooleanField(default=False)
+    agreed = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_expiry = models.DateTimeField(null=True, blank=True)
-    profile_image = models.URLField(blank=True, null=True, default='https://res.cloudinary.com/dc68huvjj/image/upload/v1748119193/zzy3zwrius3kjrzp4ifc.png')
+    profile_image = models.URLField(blank=True, null=True, default='')
     expo_token = models.CharField(max_length=100, default="hsvsx92jjs")
     date_joined = models.DateTimeField(default=timezone.now)
 
@@ -79,6 +81,24 @@ class MedicalRecord(models.Model):
 
     def __str__(self):
         return f"{self.patient.user.full_name} Date: ({self.date})"
+
+# staff notification model
+class StaffNotification(models.Model):
+    TYPES = [
+        ('appointment','Appointment'),
+        ('system','System'),
+        ('prescription','Prescription'),
+        ('update','Update'),
+        ('order','Order'),
+    ]
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    message = models.TextField()
+    message_type = models.CharField(max_length=20, choices=TYPES, default='update')
+    is_read = models.BooleanField(default=False)
+    date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.staff.full_name} {self.message_type} Date: ({self.date})"
 
 # notification model
 class Notification(models.Model):

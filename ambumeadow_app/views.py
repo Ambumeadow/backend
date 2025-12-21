@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, parser_classes
 
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from . models import User, Notification
+from . models import User, Notification, Staff, StaffNotification
 from .serializers import NotificationSerializer
 
 import firebase_admin
@@ -283,3 +283,111 @@ def update_user_profile(request):
 
 
 # end of update rider profile api
+
+
+# start of siginin for staffs
+@api_view(['POST'])
+def staff_signin(request):
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    try:
+        # Try Firebase sign in
+        login = authe.sign_in_with_email_and_password(email, password)
+        id_token = login["idToken"]
+
+        # Get account info
+        info = authe.get_account_info(id_token)
+        email_verified = info["users"][0]["emailVerified"]
+
+        if not email_verified:
+            # Resend verification email
+            authe.send_email_verification(id_token)
+
+            return JsonResponse({
+                "message": "Email not verified. Verification link has been sent again."
+            }, status=403)
+
+        # Email verified → Continue login
+        uid = info["users"][0]["localId"]
+        db_staff = Staff.objects.filter(firebase_uid=uid).first()
+        # log user action
+        # logger.info(f"User sign in: Email: {email}, Name: {db_user.full_name}")
+
+        return JsonResponse({
+            "message": "Login successful",
+            "access_token": id_token,
+            "staff": {
+                "staff_id": db_staff.id,
+                "staff_name": db_staff.full_name,
+                "staff_email": db_staff.email,
+                "phone_number": db_staff.phone_number,
+                "phone_verified": db_staff.phone_verified,
+                "profile_image": db_staff.profile_image.url if db_staff.profile_image else None,
+                "date_joined": db_staff.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({"message": "Invalid login", "error": str(e)}, status=401)
+# end of staff signin
+
+# start of signup
+@csrf_exempt
+@api_view(['POST'])
+def staff_signup(request):
+    data = request.data
+    first_name = data.get("first_name", "").strip()
+    last_name = data.get("last_name", "").strip()
+    full_name = f"{first_name} {last_name}".strip()
+    id_number = data.get("id_number")
+    role = data.get("role")
+    phone_number = data.get("phone_number")
+    email = data.get("email")
+    password = data.get("password")
+    agreed = data.get("agreed")
+
+    if not all([full_name, phone_number, email, password, agreed]):
+        return JsonResponse({"message": "Missing fields"}, status=400)
+
+    # check if email already exists in firebase
+    try:
+        existing_user = authe.get_user_by_email(email)
+        return JsonResponse({"message": "Email already exists"}, status=400)
+    except:
+        pass  # user does not exist, continue
+
+    try:
+        # Create user in Firebase
+        user = authe.create_user_with_email_and_password(email, password)
+
+        # # Send verification email
+        authe.send_email_verification(user['idToken'])
+
+        # # Save profile to Django database (NO PASSWORD)
+        uid = user["localId"]
+        Staff.objects.create(
+            firebase_uid=uid,
+            full_name=full_name,
+            phone_number=phone_number,
+            id_number=id_number,
+            role=role,
+            email=email,
+            agreed=agreed
+        )
+        # # log user action
+        # # logger.info(f"User sign up: Email: {email}, Name: {full_name}")
+
+        # # create welcome notification
+        db_staff = Staff.objects.get(firebase_uid=uid)
+        StaffNotification.objects.create(
+            staff=db_staff,
+            message="Welcome to Ambumeadow! Your account has been created successfully.",
+            is_read=False
+        )
+
+        return JsonResponse({"message": "Account created. Check your email to verify."}, status=201)
+
+    except Exception as e:
+        return JsonResponse({"message": "Signup failed", "error": str(e)}, status=400)
+# end
