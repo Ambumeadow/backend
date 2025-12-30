@@ -162,3 +162,31 @@ class Ambulance(models.Model):
 
     def __str__(self):
         return f"Ambulance {self.plate_number} Driver: {self.driver.full_name}"
+
+# product model - for the merchandise store
+class Product(models.Model):
+    CATEGORY_CHOICES = [
+        ("emergency", "Emergency"),
+        ("antibiotic", "Antibiotics"),
+        ("pain_relief", "Pain Relief"),
+        ("chronic", "Chronic Care"),
+        ("pediatric", "Child & Maternal"),
+        ("digestive", "Digestive"),
+        ("respiratory", "Respiratory"),
+        ("mental_health", "Mental Health"),
+        ("skin", "Skin Care"),
+        ("supplements", "Supplements"),
+    ]
+    
+    product_name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
+    image = models.ImageField(upload_to='products/', null=True, blank=True)
+    requires_prescription = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_added = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.product_name} {self.price} {self.quantity}"
