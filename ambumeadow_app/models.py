@@ -149,11 +149,10 @@ class Ambulance(models.Model):
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
     plate_number = models.CharField(max_length=20, unique=True)
-    driver_phone = models.CharField(max_length=20)
     is_available = models.BooleanField(default=True)
     current_lat = models.FloatField(null=True, blank=True, default=0.0)
     current_lng = models.FloatField(null=True, blank=True, default=0.0)
     date_joined = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Ambulance {self.plate_number} Driver: {self.driver_name}"
+        return f"Ambulance {self.plate_number} Driver: {self.driver.full_name}"

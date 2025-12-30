@@ -3,6 +3,7 @@ from . import views
 from .api_views.auth import signin, signup, staff_signin, staff_signup, verify_phone, delete_account, request_password_reset
 from .api_views.profile import update_user_profile
 from .api_views.notifications import get_user_notifications
+from .api_views.ambulance import add_ambulance, get_nearest_ambulances
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -15,4 +16,6 @@ urlpatterns = [
     path('request_password_reset/', request_password_reset, name='request_password_reset'),
     path('get_user_notifications/<int:user_id>/', get_user_notifications, name='get_user_notifications'),
     path('update_user_profile/', update_user_profile, name='update_user_profile'),
+    path('add_ambulance/', add_ambulance, name='add_ambulance'),
+    path('get_nearest_ambulances/', get_nearest_ambulances, name='get_nearest_ambulances'),
 ]
