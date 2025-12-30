@@ -23,6 +23,32 @@ class User(models.Model):
     def __str__(self):
         return f"{self.full_name} Date joined: ({self.date_joined})"
 
+# hospital model
+class Hospital(models.Model):
+    hospital_name = models.CharField(max_length=100)
+    email = models.CharField(max_length=100, default="")
+    phone_number = models.CharField(max_length=20, unique=True)
+    emergency_contact = models.CharField(max_length=20, default="")
+    latitude = models.FloatField(null=True, blank=True, default=0.0)
+    longitude = models.FloatField(null=True, blank=True, default=0.0)
+    date_joined = models.DateTimeField(default=timezone.now)
+
+# driver model
+class Driver(models.Model):
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=20, unique=True)
+    email = models.CharField(max_length=100, default="")
+    license_number = models.CharField(max_length=50, unique=True)
+    firebase_uid = models.CharField(max_length=256, default="@Ambumeadow2025")
+    phone_verified = models.BooleanField(default=False)
+    agreed = models.BooleanField(default=False)
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    otp_expiry = models.DateTimeField(null=True, blank=True)
+    profile_image = models.URLField(blank=True, null=True, default='')
+    expo_token = models.CharField(max_length=100, default="hsvsx92jjs")
+    date_joined = models.DateTimeField(default=timezone.now)
+
 # staff model
 class Staff(models.Model):
     ROLE_CHOICES = [
@@ -117,3 +143,17 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.user.full_name} {self.message_type} Date: ({self.date})"
+
+# ambulance model
+class Ambulance(models.Model):
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
+    plate_number = models.CharField(max_length=20, unique=True)
+    driver_phone = models.CharField(max_length=20)
+    is_available = models.BooleanField(default=True)
+    current_lat = models.FloatField(null=True, blank=True, default=0.0)
+    current_lng = models.FloatField(null=True, blank=True, default=0.0)
+    date_joined = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Ambulance {self.plate_number} Driver: {self.driver_name}"

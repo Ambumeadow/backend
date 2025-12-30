@@ -1,15 +1,18 @@
 from django.urls import path
 from . import views
+from .api_views.auth import signin, signup, staff_signin, staff_signup, verify_phone, delete_account, request_password_reset
+from .api_views.profile import update_user_profile
+from .api_views.notifications import get_user_notifications
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('signin/', views.signin, name='signin'),
-    path('staff_signin/', views.staff_signin, name='staff_signin'),
-    path('signup/', views.signup, name='signup'),
-    path('staff_signup/', views.staff_signup, name='staff_signup'),
-    path('verify_phone/', views.verify_phone, name='verify_phone'),
-    path('delete_account/', views.delete_account, name='delete_account'),
-    path('request_password_reset/', views.request_password_reset, name='request_password_reset'),
-    path('get_user_notifications/<int:user_id>/', views.get_user_notifications, name='get_user_notifications'),
-    path('update_user_profile/', views.update_user_profile, name='update_user_profile'),
+    path('signin/', signin, name='signin'),
+    path('staff_signin/', staff_signin, name='staff_signin'),
+    path('signup/', signup, name='signup'),
+    path('staff_signup/', staff_signup, name='staff_signup'),
+    path('verify_phone/', verify_phone, name='verify_phone'),
+    path('delete_account/', delete_account, name='delete_account'),
+    path('request_password_reset/', request_password_reset, name='request_password_reset'),
+    path('get_user_notifications/<int:user_id>/', get_user_notifications, name='get_user_notifications'),
+    path('update_user_profile/', update_user_profile, name='update_user_profile'),
 ]
