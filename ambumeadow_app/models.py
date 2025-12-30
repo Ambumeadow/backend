@@ -33,6 +33,9 @@ class Hospital(models.Model):
     longitude = models.FloatField(null=True, blank=True, default=0.0)
     date_joined = models.DateTimeField(default=timezone.now)
 
+    def __str__(self):
+        return f"{self.hospital_name} Date joined: ({self.date_joined})"
+
 # driver model
 class Driver(models.Model):
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
@@ -48,6 +51,9 @@ class Driver(models.Model):
     profile_image = models.URLField(blank=True, null=True, default='')
     expo_token = models.CharField(max_length=100, default="hsvsx92jjs")
     date_joined = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.full_name} Date joined: ({self.date_joined})"
 
 # staff model
 class Staff(models.Model):

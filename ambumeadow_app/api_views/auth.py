@@ -58,9 +58,6 @@ def verify_firebase_token(view_func):
 
     return wrapper
 
-def index(request):
-    return HttpResponse("This Ambumeadow index page.!")
-
 
 # start of siginin
 @api_view(['POST'])

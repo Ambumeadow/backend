@@ -7,12 +7,15 @@ from ambumeadow_app.models import Hospital, Ambulance
 from . auth import verify_firebase_token
 from django.http import JsonResponse
 
+from . auth import verify_firebase_token
+
 from ambumeadow_app.api_serializers.ambulance import NearestAmbulanceSerializer
 from ambumeadow_app.utils.distance import haversine
 
 # api to add ambulance
 @csrf_exempt
 @api_view(['POST'])
+# @verify_firebase_token
 def add_ambulance(request):
     if request.method != 'POST':
         return JsonResponse({"message": "Invalid request method"}, status=405)
@@ -63,6 +66,7 @@ def add_ambulance(request):
 
 # get nearest ambulance api
 @api_view(["POST"])
+# @verify_firebase_token
 def get_nearest_ambulances(request):
     """
     Expects:

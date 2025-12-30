@@ -4,6 +4,7 @@ from .api_views.auth import signin, signup, staff_signin, staff_signup, verify_p
 from .api_views.profile import update_user_profile
 from .api_views.notifications import get_user_notifications
 from .api_views.ambulance import add_ambulance, get_nearest_ambulances
+from .api_views.hospital import  add_hospital, get_all_hospitals
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -18,4 +19,6 @@ urlpatterns = [
     path('update_user_profile/', update_user_profile, name='update_user_profile'),
     path('add_ambulance/', add_ambulance, name='add_ambulance'),
     path('get_nearest_ambulances/', get_nearest_ambulances, name='get_nearest_ambulances'),
+    path('add_hospital/', add_hospital, name='add_hospital'),
+    path('get_all_hospitals/', get_all_hospitals, name='get_all_hospitals'),
 ]
