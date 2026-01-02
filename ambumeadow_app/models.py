@@ -68,11 +68,18 @@ class Staff(models.Model):
         ('driver', 'Driver'),
         ('other', 'Other'),
     ]
+    STATUS = [
+        ('active', 'Active'),
+        ('busy', 'Busy'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+    ]
     full_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=100, default="johndoe@example.com")
     id_number = models.CharField(max_length=8, default='12345678')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='other')
+    status = models.CharField(max_length=20, choices=STATUS, default='active')
     firebase_uid = models.CharField(max_length=256, default="@Ambumeadow2025")
     phone_verified = models.BooleanField(default=False)
     agreed = models.BooleanField(default=False)
