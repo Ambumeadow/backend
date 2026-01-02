@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
 
-from ..models import Staff
+from ambumeadow_app.models import Staff
 from . auth import verify_firebase_token
 
 

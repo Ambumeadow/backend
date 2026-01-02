@@ -90,7 +90,7 @@ class Staff(models.Model):
     date_joined = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.full_name} Date joined: ({self.date_joined})"
+        return f"{self.id} - {self.full_name} Date joined: ({self.date_joined})"
 
 # patient model link to user
 class Patient(models.Model):
@@ -209,3 +209,18 @@ class ProductOrder(models.Model):
 
     def __str__(self):
         return f"Order {self.id} by {self.user_id.full_name} for {self.product_id.product_name}"
+
+# care appointment model
+class CareAppointment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+    doctor = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    care_type = models.CharField(max_length=100)
+    appointment_date = models.DateField()
+    appointment_time = models.TimeField()
+    notes = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, default='scheduled')
+    date_created = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user.full_name} - {self.care_type}"

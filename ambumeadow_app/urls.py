@@ -7,11 +7,12 @@ from .api_views.ambulance import add_ambulance, get_nearest_ambulances
 from .api_views.hospital import  add_hospital, get_all_hospitals
 from .api_views.merchandise_store import add_product, get_all_products, update_product_stock, create_order
 from .api_views.doctor import get_active_doctors
+from .api_views.appointment import  schedule_care
 
 
 urlpatterns = [
     path('', views.index, name='index'),
-    
+
     path('signin/', signin, name='signin'),
     path('staff_signin/', staff_signin, name='staff_signin'),
     path('signup/', signup, name='signup'),
@@ -35,5 +36,7 @@ urlpatterns = [
     path('create_order/', create_order, name='create_order'),
 
     path('get_active_doctors/', get_active_doctors, name='get_active_doctors'),
+
+    path('schedule_care/', schedule_care, name='schedule_care'),
 
 ]

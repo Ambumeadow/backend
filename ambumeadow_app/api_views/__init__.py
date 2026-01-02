@@ -5,3 +5,4 @@ from .ambulance import *
 from .hospital import *
 from .merchandise_store import *
 from .doctor import *
+from .appointment import *
