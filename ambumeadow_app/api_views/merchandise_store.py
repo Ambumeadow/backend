@@ -2,8 +2,10 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.http import JsonResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
-from ambumeadow_app.models import Product
+from ambumeadow_app.models import Product, User, ProductOrder, Notification
+import json
 
 
 @api_view(['POST'])
@@ -165,3 +167,67 @@ def update_product_stock(request):
         )
 
 # end of update product stock api
+
+
+# create  order api
+@csrf_exempt
+@api_view(['POST'])
+def create_order(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_id = data.get("user_id")
+            products = data.get("products", [])  # List of items
+
+            if not user_id or not products:
+                return JsonResponse({"message": "User ID and product list are required"}, status=400)
+
+            user = User.objects.filter(id=user_id).first()
+            if not user:
+                return JsonResponse({"message": "User not found"}, status=404)
+
+            order_ids = []
+            for item in products:
+                product_id = item.get("product_id")
+                quantity = item.get("quantity")
+                price = item.get("price")
+
+                # Check required fields
+                if not all([product_id, quantity, price]):
+                    return JsonResponse({"message": "Missing product details in one of the items"}, status=400)
+
+                product = Product.objects.filter(id=product_id).first()
+                if not product:
+                    return JsonResponse({"message": f"Product with ID {product_id} not found"}, status=404)
+
+                if quantity > product.quantity:
+                    return JsonResponse({"message": f"Not enough stock for {product.product_name}"}, status=400)
+
+                # Create order
+                order = ProductOrder.objects.create(
+                    product_id=product,
+                    user_id=user,
+                    quantity=quantity,
+                    price=price,
+                    delivered=False
+                )
+                product.quantity -= quantity
+                product.save()
+                order_ids.append(order.id)
+
+
+                # Notification for each item
+                Notification.objects.create(
+                    user=user,
+                    message=f"Order for {product.product_name} placed successfully. We’ll deliver soon.",
+                    is_read=False
+                )
+
+            return JsonResponse({"message": "All orders created successfully", "order_ids": order_ids}, status=200)
+
+        except Exception as e:
+            print("Error:", str(e))
+            # logger.info(f"Error creating orders: {str(e)}")
+            return JsonResponse({"message": "An error occurred", "error": str(e)}, status=500)
+
+# endof create order api

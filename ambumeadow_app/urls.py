@@ -5,7 +5,7 @@ from .api_views.profile import update_user_profile
 from .api_views.notifications import get_user_notifications
 from .api_views.ambulance import add_ambulance, get_nearest_ambulances
 from .api_views.hospital import  add_hospital, get_all_hospitals
-from .api_views.merchandise_store import add_product, get_all_products, update_product_stock
+from .api_views.merchandise_store import add_product, get_all_products, update_product_stock, create_order
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -25,5 +25,6 @@ urlpatterns = [
     path('add_product/', add_product, name='add_product'),
     path('get_all_products/', get_all_products, name='get_all_products'),
     path('update_product_stock/', update_product_stock, name='update_product_stock'),
+    path('create_order/', create_order, name='create_order'),
 
 ]
