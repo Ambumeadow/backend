@@ -199,7 +199,9 @@ def staff_signin(request):
                 "staff_name": db_staff.full_name,
                 "staff_email": db_staff.email,
                 "phone_number": db_staff.phone_number,
+                "department": db_staff.department,
                 "phone_verified": db_staff.phone_verified,
+                "role": db_staff.role,
                 "profile_image": db_staff.profile_image.url if db_staff.profile_image else None,
                 "date_joined": db_staff.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
             }
@@ -214,17 +216,17 @@ def staff_signin(request):
 @api_view(['POST'])
 def staff_signup(request):
     data = request.data
-    first_name = data.get("first_name", "").strip()
-    last_name = data.get("last_name", "").strip()
-    full_name = f"{first_name} {last_name}".strip()
+    full_name = data.get("full_name")
     id_number = data.get("id_number")
+    medical_license_number = data.get("medical_license_number")
+    department = data.get("department")
     role = data.get("role")
     phone_number = data.get("phone_number")
     email = data.get("email")
     password = data.get("password")
     agreed = data.get("agreed")
 
-    if not all([full_name, phone_number, email, password, agreed]):
+    if not all([full_name, phone_number,id_number, medical_license_number, department, email, password, agreed]):
         return JsonResponse({"message": "Missing fields"}, status=400)
 
     # check if email already exists in firebase

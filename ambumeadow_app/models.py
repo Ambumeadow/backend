@@ -74,10 +74,23 @@ class Staff(models.Model):
         ('inactive', 'Inactive'),
         ('suspended', 'Suspended'),
     ]
+    DEPARTMENT = [
+        ('cardiology', 'Cardiology'),
+        ('neurology', 'Neurology'),
+        ('orthopedics', 'Orthopedics'),
+        ('pediatrics', 'Pediatrics'),
+        ('emergency', 'Emergency'),
+        ('radiology', 'Radiology'),
+        ('general_medicine', 'General Medicine'),
+        ('surgery', 'Surgery'),
+        ('other', 'Other'),
+    ]
     full_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=100, default="johndoe@example.com")
     id_number = models.CharField(max_length=8, default='12345678')
+    medical_license_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    department = models.CharField(max_length=100, choices=DEPARTMENT, default='other')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='other')
     status = models.CharField(max_length=20, choices=STATUS, default='active')
     firebase_uid = models.CharField(max_length=256, default="@Ambumeadow2025")
