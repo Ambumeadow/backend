@@ -8,6 +8,7 @@ from .api_views.hospital import  add_hospital, get_all_hospitals
 from .api_views.merchandise_store import add_product, get_all_products, update_product_stock, create_order
 from .api_views.doctor import get_active_doctors
 from .api_views.appointment import  schedule_care
+from .api_views.admin import get_all_users, delete_user, toggle_user_status
 
 
 urlpatterns = [
@@ -39,5 +40,10 @@ urlpatterns = [
     path('get_active_doctors/', get_active_doctors, name='get_active_doctors'),
 
     path('schedule_care/', schedule_care, name='schedule_care'),
+
+    # admin apis
+    path('get_all_users/', get_all_users, name='get_all_users'),
+    path('delete_user/', delete_user, name='delete_user'),
+    path('toggle_user_status/', toggle_user_status, name='toggle_user_status'),
 
 ]

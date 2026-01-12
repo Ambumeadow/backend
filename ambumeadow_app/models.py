@@ -21,7 +21,7 @@ class User(models.Model):
     expo_token = models.CharField(max_length=100, default="hsvsx92jjs")
 
     def __str__(self):
-        return f"{self.full_name} Date joined: ({self.date_joined})"
+        return f"#{self.id} {self.full_name} Date joined: {self.date_joined} {self.is_active}"
 
 # hospital model
 class Hospital(models.Model):
