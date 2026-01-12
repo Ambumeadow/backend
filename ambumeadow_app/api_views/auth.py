@@ -59,6 +59,33 @@ def verify_firebase_token(view_func):
     return wrapper
 
 
+# api to refresh token
+@api_view(["POST"])
+def refresh_token(request):
+    refresh_token = request.data.get("refresh_token")
+
+    if not refresh_token:
+        return JsonResponse({"message": "Refresh token is required"}, status=400)
+
+    try:
+        # Pyrebase refresh
+        new_tokens = authe.refresh(refresh_token)
+
+        return JsonResponse({
+            "access_token": new_tokens["idToken"],
+            "refresh_token": new_tokens["refreshToken"],
+            "expires_in": new_tokens["expiresIn"],
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "message": "Failed to refresh token",
+            "error": str(e)
+        }, status=401)
+
+# end
+
+
 # start of siginin
 @api_view(['POST'])
 def signin(request):
@@ -69,6 +96,8 @@ def signin(request):
         # Try Firebase sign in
         login = authe.sign_in_with_email_and_password(email, password)
         id_token = login["idToken"]
+        refresh_token = login["refreshToken"]
+        expires_in = login["expiresIn"]
 
         # Get account info
         info = authe.get_account_info(id_token)
@@ -91,6 +120,8 @@ def signin(request):
         return JsonResponse({
             "message": "Login successful",
             "access_token": id_token,
+            "refresh_token": refresh_token,
+            "expires_in": expires_in,
             "user": {
                 "user_id": db_user.id,
                 "user_name": db_user.full_name,
@@ -172,6 +203,8 @@ def staff_signin(request):
         # Try Firebase sign in
         login = authe.sign_in_with_email_and_password(email, password)
         id_token = login["idToken"]
+        refresh_token = login["refreshToken"]
+        expires_in = login["expiresIn"]
 
         # Get account info
         info = authe.get_account_info(id_token)
@@ -194,6 +227,8 @@ def staff_signin(request):
         return JsonResponse({
             "message": "Login successful",
             "access_token": id_token,
+            "refresh_token": refresh_token,
+            "expires_in": expires_in,
             "staff": {
                 "staff_id": db_staff.id,
                 "staff_name": db_staff.full_name,

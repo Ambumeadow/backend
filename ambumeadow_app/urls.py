@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .api_views.auth import signin, signup, staff_signin, staff_signup, verify_phone, delete_account, request_password_reset
+from .api_views.auth import signin, signup, staff_signin, staff_signup, verify_phone, delete_account, request_password_reset, refresh_token
 from .api_views.profile import update_user_profile
 from .api_views.notifications import get_user_notifications
 from .api_views.ambulance import add_ambulance, get_nearest_ambulances
@@ -13,6 +13,7 @@ from .api_views.appointment import  schedule_care
 urlpatterns = [
     path('', views.index, name='index'),
 
+    path('refresh_token/', refresh_token, name='refresh_token'),
     path('signin/', signin, name='signin'),
     path('staff_signin/', staff_signin, name='staff_signin'),
     path('signup/', signup, name='signup'),
