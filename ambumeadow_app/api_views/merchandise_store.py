@@ -7,32 +7,30 @@ from django.views.decorators.csrf import csrf_exempt
 from ambumeadow_app.models import Product, User, ProductOrder, Notification
 import json
 
+from . auth import verify_firebase_token
+
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
+@verify_firebase_token
 def add_product(request):
     product_name = request.data.get("product_name")
     description = request.data.get("description", "")
     category = request.data.get("category")
     price = request.data.get("price")
     quantity = request.data.get("quantity")
+    expiry_date = request.data.get("expiry_date")
     requires_prescription = request.data.get("requires_prescription", False)
     image = request.FILES.get('image')
 
     # basic validation
     if not product_name or not category or price is None or quantity is None:
+        print("product_name, category, price and quantity are required")
         return JsonResponse(
             {"message": "product_name, category, price and quantity are required"},
             status=400
         )
 
-    # validate category
-    valid_categories = dict(Product.CATEGORY_CHOICES).keys()
-    if category not in valid_categories:
-        return JsonResponse(
-            {"message": "Invalid product category"},
-            status=400
-        )
 
     try:
         product = Product.objects.create(
@@ -41,6 +39,7 @@ def add_product(request):
             category=category,
             price=price,
             quantity=quantity,
+            expiry_date=expiry_date,
             image=image,
             requires_prescription=requires_prescription,
         )
@@ -69,6 +68,7 @@ def add_product(request):
 
 # api to get all products
 @api_view(['GET'])
+@verify_firebase_token
 def get_all_products(request):
     try:
         products = Product.objects.filter(is_active=True).order_by('-date_added')
@@ -107,6 +107,7 @@ def get_all_products(request):
 
 # api to update the product quantity and price
 @api_view(['PUT'])
+@verify_firebase_token
 def update_product_stock(request):
     product_id = request.data.get("product_id")
     price = request.data.get("price")
@@ -140,7 +141,7 @@ def update_product_stock(request):
 
         if quantity is not None:
             try:
-                product.quantity = int(quantity)
+                product.quantity += int(quantity)
             except ValueError:
                 return JsonResponse(
                     {"message": "Invalid quantity value"},
@@ -172,6 +173,7 @@ def update_product_stock(request):
 # create  order api
 @csrf_exempt
 @api_view(['POST'])
+@verify_firebase_token
 def create_order(request):
     if request.method == 'POST':
         try:

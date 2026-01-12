@@ -206,6 +206,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/', null=True, blank=True)
     requires_prescription = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    expiry_date = models.DateField(null=True, blank=True, default=timezone.now)
     date_added = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

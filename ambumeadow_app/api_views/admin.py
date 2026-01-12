@@ -61,7 +61,7 @@ def toggle_user_status(request):
         user = User.objects.get(id=user_id)
         if not user:
             return Response({"error": "User not found"}, status=404)
-            
+
         user.is_active = not user.is_active
         user.save()
         return Response({
