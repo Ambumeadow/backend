@@ -285,6 +285,8 @@ def staff_signup(request):
             full_name=full_name,
             phone_number=phone_number,
             id_number=id_number,
+            department=department,
+            medical_license_number=medical_license_number,
             role=role,
             email=email,
             agreed=agreed

@@ -9,6 +9,7 @@ from .api_views.merchandise_store import add_product, get_all_products, update_p
 from .api_views.doctor import get_active_doctors
 from .api_views.appointment import  schedule_care
 from .api_views.admin import get_all_users, delete_user, toggle_user_status
+from .api_views.admin_staffs import get_all_staffs, delete_staff, toggle_staff_status
 
 
 urlpatterns = [
@@ -45,5 +46,8 @@ urlpatterns = [
     path('get_all_users/', get_all_users, name='get_all_users'),
     path('delete_user/', delete_user, name='delete_user'),
     path('toggle_user_status/', toggle_user_status, name='toggle_user_status'),
+    path('get_all_staffs/', get_all_staffs, name='get_all_staffs'),
+    path('delete_staff/', delete_staff, name='delete_staff'),
+    path('toggle_staff_status/', toggle_staff_status, name='toggle_staff_status'),
 
 ]
