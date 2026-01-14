@@ -9,7 +9,7 @@ from firebase_admin import auth
 
 # api to get all users
 @api_view(['GET'])
-# @verify_firebase_token
+@verify_firebase_token
 def get_all_users(request):
     users = User.objects.all()
     user_data = []
@@ -29,7 +29,7 @@ def get_all_users(request):
 
 # delete user
 @api_view(['DELETE'])
-# @verify_firebase_token
+@verify_firebase_token
 def delete_user(request):
     user_id = request.data.get('user_id')
     try:
@@ -54,7 +54,7 @@ def delete_user(request):
 
 # Activate / Suspend user
 @api_view(['PATCH'])
-# @verify_firebase_token
+@verify_firebase_token
 def toggle_user_status(request):
     user_id = request.data.get('user_id')
     try:
