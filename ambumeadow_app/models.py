@@ -43,6 +43,7 @@ class Driver(models.Model):
     phone_number = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=100, default="")
     license_number = models.CharField(max_length=50, unique=True)
+    id_number = models.CharField(max_length=8, default='12345678')
     firebase_uid = models.CharField(max_length=256, default="@Ambumeadow2025")
     phone_verified = models.BooleanField(default=False)
     agreed = models.BooleanField(default=False)
@@ -170,14 +171,37 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.user.full_name} {self.message_type} Date: ({self.date})"
 
+# driver notification model
+class DriverNotification(models.Model):
+    TYPES = [
+        ('emergency','Emergency'),
+        ('update','Update'),
+        ('system', 'System'),
+    ]
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
+    message = models.TextField()
+    message_type = models.CharField(max_length=20, choices=TYPES, default='update')
+    is_read = models.BooleanField(default=False)
+    date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.driver.full_name} {self.message_type} Date: ({self.date})"
+
 # ambulance model
 class Ambulance(models.Model):
+    STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('busy', 'Busy'),
+        ('maintenance', 'Maintenance'),
+        ('out_of_service', 'Out of Service'),
+    ]
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
+    driver = models.ForeignKey(Driver, on_delete=models.SET_NULL, null=True, blank=True)
     plate_number = models.CharField(max_length=20, unique=True)
     is_available = models.BooleanField(default=True)
     current_lat = models.FloatField(null=True, blank=True, default=0.0)
     current_lng = models.FloatField(null=True, blank=True, default=0.0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
     date_joined = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

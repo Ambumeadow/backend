@@ -8,3 +8,5 @@ from .doctor import *
 from .appointment import *
 from .admin import *
 from .admin_staffs import *
+from .ambulance import *
+from .driver import *

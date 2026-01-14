@@ -23,12 +23,11 @@ def add_ambulance(request):
     try:
         data = request.data
         hospital_id = data.get("hospital_id")
-        driver_id = data.get("driver_id")
         plate_number = data.get("plate_number")
         latitude = data.get("latitude")
         longitude = data.get("longitude")
 
-        if not all([hospital_id, driver_id, plate_number]):
+        if not all([hospital_id, plate_number]):
             return JsonResponse({"message": "Missing required fields"}, status=400)
 
         # check if hospital exists
@@ -40,18 +39,13 @@ def add_ambulance(request):
         if existing_ambulance:
             return JsonResponse({"message": "Ambulance with this plate number already exists"}, status=400)
         
-        # check if driver exists
-        driver = Driver.objects.filter(id=driver_id).first()
-        if not driver:
-            return JsonResponse({"message": "Driver not found"}, status=404)
 
         # Save Ambulance
         ambulance = Ambulance.objects.create(
-            hospital_id=hospital,
-            driver_id=driver,
+            hospital=hospital,
             plate_number=plate_number,
-            latitude=latitude,
-            longitude=longitude
+            current_lat=latitude,
+            current_lng=longitude
         )
 
 
@@ -62,6 +56,39 @@ def add_ambulance(request):
         return JsonResponse({"message": "Failed to add ambulance", "error": str(e)}, status=400)
 
 #end of adding ambulance api
+
+# api to get all ambulances
+@api_view(['GET'])
+# @verify_firebase_token
+def get_all_ambulances(request):
+    try:
+        ambulances = Ambulance.objects.all().order_by('-date_joined')
+
+        ambulance_list = []
+        for ambulance in ambulances:
+            ambulance_list.append({
+                "id": ambulance.id,
+                "plate_number": ambulance.plate_number,
+                "hospital": ambulance.hospital.hospital_name,
+                "driver": ambulance.driver.full_name if ambulance.driver else "Unassigned",
+                "latitude": ambulance.current_lat,
+                "longitude": ambulance.current_lng,
+                "status": ambulance.status,
+                "date_joined": ambulance.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+            })
+
+        return JsonResponse({
+            "count": len(ambulance_list),
+            "ambulances": ambulance_list
+        }, status=200)
+
+    except Exception as e:
+        return JsonResponse(
+            {"message": "Failed to fetch ambulances", "error": str(e)},
+            status=500
+        )       
+
+# end of get all ambulance api
 
 
 # get nearest ambulance api
@@ -110,3 +137,71 @@ def get_nearest_ambulances(request):
     serializer = NearestAmbulanceSerializer(results, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 # end of getting nearest ambulance api
+
+
+# delete user
+@api_view(['DELETE'])
+# @verify_firebase_token
+def delete_ambulance(request):
+    ambulance_id = request.data.get('ambulance_id')
+    try:
+        ambulance = Ambulance.objects.get(id=ambulance_id)
+
+        if not ambulance:
+            return Response({"error": "Ambulance not found"}, status=404)
+        
+        ambulance.delete()
+
+        return Response({"message": "Ambulance deleted successfully"})
+    except Ambulance.DoesNotExist:
+        return Response({"error": "Ambulance not found"}, status=404)
+
+# end of deleter user api
+
+
+# Update ambulance status
+@api_view(['PATCH'])
+# @verify_firebase_token
+def toggle_ambulance_status(request):
+    ambulance_id = request.data.get('ambulance_id')
+    status = request.data.get('status')
+    try:
+        ambulance = Ambulance.objects.get(id=ambulance_id)
+        if not ambulance:
+            return Response({"error": "Ambulance not found"}, status=404)
+
+        ambulance.status = status
+        ambulance.save()
+        return Response({
+            "message": "Status updated",
+            "status": ambulance.status
+        })
+    except Ambulance.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+
+# end of toggle ambulance api
+
+# api to assign ambulance to driver
+@api_view(['PATCH'])
+# @verify_firebase_token
+def assign_ambulance_to_driver(request):
+    ambulance_id = request.data.get('ambulance_id')
+    driver_id = request.data.get('driver_id')
+    try:
+        ambulance = Ambulance.objects.get(id=ambulance_id)
+        driver = Driver.objects.get(id=driver_id)
+        if not ambulance:
+            return Response({"error": "Ambulance not found"}, status=404)
+        if not driver:
+            return Response({"error": "Driver not found"}, status=404)
+
+        ambulance.driver = driver
+        ambulance.save()
+        return Response({
+            "message": "Ambulance assigned to driver",
+            "driver": driver.full_name
+        })
+    except Ambulance.DoesNotExist:
+        return Response({"error": "Ambulance not found"}, status=404)
+    except Driver.DoesNotExist:
+        return Response({"error": "Driver not found"}, status=404)

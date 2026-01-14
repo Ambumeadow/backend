@@ -3,13 +3,14 @@ from . import views
 from .api_views.auth import signin, signup, staff_signin, staff_signup, verify_phone, delete_account, request_password_reset, refresh_token
 from .api_views.profile import update_user_profile
 from .api_views.notifications import get_user_notifications
-from .api_views.ambulance import add_ambulance, get_nearest_ambulances
+from .api_views.ambulance import add_ambulance, get_all_ambulances,  get_nearest_ambulances, delete_ambulance, toggle_ambulance_status
 from .api_views.hospital import  add_hospital, get_all_hospitals
 from .api_views.merchandise_store import add_product, get_all_products, update_product_stock, create_order
 from .api_views.doctor import get_active_doctors
 from .api_views.appointment import  schedule_care
 from .api_views.admin import get_all_users, delete_user, toggle_user_status
 from .api_views.admin_staffs import get_all_staffs, delete_staff, toggle_staff_status
+from .api_views.driver import driver_signup, get_drivers
 
 
 urlpatterns = [
@@ -28,7 +29,10 @@ urlpatterns = [
     path('update_user_profile/', update_user_profile, name='update_user_profile'),
 
     path('add_ambulance/', add_ambulance, name='add_ambulance'),
+    path('get_all_ambulances/', get_all_ambulances, name='get_all_ambulances'),
     path('get_nearest_ambulances/', get_nearest_ambulances, name='get_nearest_ambulances'),
+    path('delete_ambulance/', delete_ambulance, name='delete_ambulance'),
+    path('toggle_ambulance_status/', toggle_ambulance_status, name='toggle_ambulance_status'),
 
     path('add_hospital/', add_hospital, name='add_hospital'),
     path('get_all_hospitals/', get_all_hospitals, name='get_all_hospitals'),
@@ -49,5 +53,9 @@ urlpatterns = [
     path('get_all_staffs/', get_all_staffs, name='get_all_staffs'),
     path('delete_staff/', delete_staff, name='delete_staff'),
     path('toggle_staff_status/', toggle_staff_status, name='toggle_staff_status'),
+
+    # driver apis
+    path('driver_signup/', driver_signup, name='driver_signup'),
+    path('get_drivers/<int:hospital_id>/', get_drivers, name='get_drivers'),
 
 ]
