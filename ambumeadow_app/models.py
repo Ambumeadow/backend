@@ -219,6 +219,8 @@ class ProductOrder(models.Model):
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     delivered = models.BooleanField(default=False)
+    latitude = models.FloatField(null=True, blank=True, default=0.0)
+    longitude = models.FloatField(null=True, blank=True, default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

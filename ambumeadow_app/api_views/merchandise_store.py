@@ -179,6 +179,8 @@ def create_order(request):
         try:
             data = json.loads(request.body)
             user_id = data.get("user_id")
+            latitude = data.get("latitude", 0.0)
+            longitude = data.get("longitude", 0.0)
             products = data.get("products", [])  # List of items
 
             if not user_id or not products:
@@ -211,7 +213,9 @@ def create_order(request):
                     user_id=user,
                     quantity=quantity,
                     price=price,
-                    delivered=False
+                    delivered=False,
+                    latitude=latitude,
+                    longitude=longitude
                 )
                 product.quantity -= quantity
                 product.save()
