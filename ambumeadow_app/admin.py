@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Notification, Staff, StaffNotification, Patient, MedicalRecord, Ambulance, Hospital, Product, ProductOrder, CareAppointment, DriverNotification
+from .models import User, Notification, Staff, StaffNotification, Patient, MedicalRecord, Ambulance, Hospital, Product, ProductOrder, CareAppointment, DriverNotification, Payment, AmbulanceBooking
 
 
 admin.site.register(User)
@@ -12,5 +12,8 @@ admin.site.register(MedicalRecord)
 admin.site.register(Ambulance)
 admin.site.register(Hospital)
 admin.site.register(Product)
+admin.site.register(Payment)
 admin.site.register(ProductOrder)
 admin.site.register(CareAppointment)
+admin.site.register(AmbulanceBooking)
+

@@ -10,3 +10,4 @@ from .admin import *
 from .admin_staffs import *
 from .ambulance import *
 from .driver import *
+from .ambulance_booking import *

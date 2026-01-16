@@ -250,6 +250,51 @@ class ProductOrder(models.Model):
     def __str__(self):
         return f"Order {self.id} by {self.user_id.full_name} for {self.product_id.product_name}"
 
+# payment model
+class Payment(models.Model):
+    METHOD_CHOICES = [
+        ('mpesa', 'M-Pesa'),
+        ('card', 'Card'),
+        ('wallet', 'Wallet'),
+        ('paystack', 'Paystack')
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+    ]
+    SERVICES_CHOICES = [
+        ('merchandise', 'Merchandise'),
+        ('care_appointment', 'Care Appointment'),
+        ('ambulance_booking', 'Ambulance Booking'),
+        ('other', "Other"),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+    service_type = models.CharField(max_length=100, choices=SERVICES_CHOICES, default='other' )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    method = models.CharField(max_length=20, choices=METHOD_CHOICES)
+    receipt_number = models.CharField(max_length=100, default="")
+    checkout_request_id = models.CharField(max_length=100, default="")
+    merchant_request_id = models.CharField(max_length=100, default="")
+    transaction_reference = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    paid_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"#{self.id} {self.user.full_name} - {self.service_type} - {self.amount}"
+
+# ambulance booking
+class AmbulanceBooking(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ambulance = models.ForeignKey(Ambulance, on_delete=models.CASCADE)
+    pickup_latitude = models.FloatField()
+    pickup_longitude = models.FloatField()
+    booking_datetime = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Ambulance {self.ambulance.plate_number} booked by {self.user.full_name}"
+
 # care appointment model
 class CareAppointment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

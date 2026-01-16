@@ -3,7 +3,7 @@ from . import views
 from .api_views.auth import signin, signup, staff_signin, staff_signup, verify_phone, delete_account, request_password_reset, refresh_token
 from .api_views.profile import update_user_profile
 from .api_views.notifications import get_user_notifications
-from .api_views.ambulance import add_ambulance, get_all_ambulances,  get_nearest_ambulances, delete_ambulance, toggle_ambulance_status
+from .api_views.ambulance import add_ambulance, get_all_ambulances,  get_nearest_ambulances, delete_ambulance, toggle_ambulance_status, book_ambulance
 from .api_views.hospital import  add_hospital, get_all_hospitals
 from .api_views.merchandise_store import add_product, get_all_products, update_product_stock, create_order
 from .api_views.doctor import get_active_doctors
@@ -32,6 +32,7 @@ urlpatterns = [
     path('get_all_ambulances/', get_all_ambulances, name='get_all_ambulances'),
     path('get_nearest_ambulances/', get_nearest_ambulances, name='get_nearest_ambulances'),
     path('delete_ambulance/', delete_ambulance, name='delete_ambulance'),
+    path('book_ambulance/', book_ambulance, name="book_ambulance"),
     path('toggle_ambulance_status/', toggle_ambulance_status, name='toggle_ambulance_status'),
 
     path('add_hospital/', add_hospital, name='add_hospital'),

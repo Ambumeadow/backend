@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
-from ambumeadow_app.models import Hospital, Ambulance
+from ambumeadow_app.models import Hospital, Ambulance, AmbulanceBooking, Payment
 from . auth import verify_firebase_token
 from django.http import JsonResponse
 
@@ -11,6 +11,11 @@ from . auth import verify_firebase_token
 
 from ambumeadow_app.api_serializers.ambulance import NearestAmbulanceSerializer
 from ambumeadow_app.utils.distance import haversine
+
+import requests
+from django.conf import settings
+from django.utils import timezone
+from django.contrib.auth.models import User
 
 # api to add ambulance
 @csrf_exempt
@@ -98,8 +103,8 @@ def get_nearest_ambulances(request):
     """
     Expects:
     {
-        "lat": -1.2921,
-        "lng": 36.8219
+        "latitude": -1.2921,
+        "longitude": 36.8219
     }
     """
 
@@ -118,6 +123,8 @@ def get_nearest_ambulances(request):
         current_lng__isnull=False,
     )
 
+    AVERAGE_SPEED_KMH = 50  # You can change this (city traffic)
+
     results = []
 
     for ambulance in ambulances:
@@ -128,7 +135,14 @@ def get_nearest_ambulances(request):
             ambulance.current_lng,
         )
 
-        ambulance.distance_km = round(distance, 2)
+        distance_km = round(distance, 2)
+
+        # 🕒 ETA in minutes
+        eta_minutes = round((distance_km / AVERAGE_SPEED_KMH) * 60)
+
+        ambulance.distance_km = distance_km
+        ambulance.eta_minutes = eta_minutes
+
         results.append(ambulance)
 
     # sort by nearest
@@ -136,7 +150,7 @@ def get_nearest_ambulances(request):
 
     serializer = NearestAmbulanceSerializer(results, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
-# end of getting nearest ambulance api
+
 
 
 # delete user
@@ -205,3 +219,93 @@ def assign_ambulance_to_driver(request):
         return Response({"error": "Ambulance not found"}, status=404)
     except Driver.DoesNotExist:
         return Response({"error": "Driver not found"}, status=404)
+
+
+# ================= VERIFY PAYSTACK =================
+def verify_paystack_payment(reference):
+    PAYSTACK_SECRET_KEY = "sk_test_adb8f6fbc4bab87dc6814514ab1d7b9df87faea4"
+    url = f"https://api.paystack.co/transaction/verify/{reference}"
+
+    headers = {
+        "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}"
+    }
+
+    response = requests.get(url, headers=headers)
+    return response.json()
+
+
+# api to book ambulance
+@api_view(["POST"])
+# @verify_firebase_token
+def book_ambulance(request):
+    user_id = request.data.get("user_id")
+    ambulance_id = request.data.get("ambulance_id")
+    reference = request.data.get("payment_reference")
+    amount = request.data.get("amount")
+    pickup_lat = request.data.get("pickup_latitude")
+    pickup_lng = request.data.get("pickup_longitude")
+
+    if not all([ambulance_id, reference, amount, pickup_lat, pickup_lng]):
+        return Response({"error": "Missing fields"}, status=400)
+
+    # ================= CHECK AMBULANCE =================
+    try:
+        ambulance = Ambulance.objects.get(id=ambulance_id)
+    except Ambulance.DoesNotExist:
+        return Response({"error": "Ambulance not found"}, status=404)
+
+    if ambulance.status != "available":
+        return Response({"error": "Ambulance is not available"}, status=400)
+
+    # ================= VERIFY PAYMENT =================
+    paystack_response = verify_paystack_payment(reference)
+
+    if not paystack_response.get("status"):
+        return Response({"error": "Payment verification failed"}, status=400)
+
+    data = paystack_response.get("data")
+
+    if data["status"] != "success":
+        return Response({"error": "Payment not successful"}, status=400)
+
+    paid_amount = data["amount"] / 100  # convert from kobo/cents
+
+    if float(paid_amount) != float(amount):
+        return Response({"error": "Amount mismatch"}, status=400)
+
+    # check user
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        return Response({"error": "User not found"}, status=404)
+
+    # ================= SAVE PAYMENT =================
+    payment = Payment.objects.create(
+        user=user,
+        hospital=ambulance.hospital,
+        service_type="ambulance_booking",
+        amount=amount,
+        method="paystack",
+        transaction_reference=reference,
+        receipt_number=data.get("reference"),
+        status="paid",
+        paid_at=timezone.now(),
+    )
+
+    # ================= CREATE BOOKING =================
+    booking = AmbulanceBooking.objects.create(
+        user=user,
+        ambulance=ambulance,
+        pickup_latitude=pickup_lat,
+        pickup_longitude=pickup_lng,
+    )
+
+    # ================= LOCK AMBULANCE =================
+    ambulance.status = "busy"
+    ambulance.is_available = False
+    ambulance.save()
+
+    return Response({
+        "message": "Ambulance booked successfully",
+        "booking_id": booking.id,
+        "payment_id": payment.id,
+    }, status=201)
