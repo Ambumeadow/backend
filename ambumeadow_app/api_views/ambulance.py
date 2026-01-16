@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
-from ambumeadow_app.models import Hospital, Ambulance, AmbulanceBooking, Payment
+from ambumeadow_app.models import Hospital, Ambulance, AmbulanceBooking, Payment, User
 from . auth import verify_firebase_token
 from django.http import JsonResponse
 
@@ -11,11 +11,11 @@ from . auth import verify_firebase_token
 
 from ambumeadow_app.api_serializers.ambulance import NearestAmbulanceSerializer
 from ambumeadow_app.utils.distance import haversine
+from ambumeadow_app.utils.verify_paystack import verify_paystack_payment
 
 import requests
 from django.conf import settings
 from django.utils import timezone
-from django.contrib.auth.models import User
 
 # api to add ambulance
 @csrf_exempt
@@ -221,22 +221,10 @@ def assign_ambulance_to_driver(request):
         return Response({"error": "Driver not found"}, status=404)
 
 
-# ================= VERIFY PAYSTACK =================
-def verify_paystack_payment(reference):
-    PAYSTACK_SECRET_KEY = "sk_test_adb8f6fbc4bab87dc6814514ab1d7b9df87faea4"
-    url = f"https://api.paystack.co/transaction/verify/{reference}"
-
-    headers = {
-        "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}"
-    }
-
-    response = requests.get(url, headers=headers)
-    return response.json()
-
-
 # api to book ambulance
 @api_view(["POST"])
 # @verify_firebase_token
+@csrf_exempt
 def book_ambulance(request):
     user_id = request.data.get("user_id")
     ambulance_id = request.data.get("ambulance_id")
