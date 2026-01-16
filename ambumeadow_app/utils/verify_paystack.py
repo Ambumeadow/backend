@@ -1,8 +1,9 @@
 import requests
+import os
 
 # ================= VERIFY PAYSTACK =================
 def verify_paystack_payment(reference):
-    PAYSTACK_SECRET_KEY = "sk_test_adb8f6fbc4bab87dc6814514ab1d7b9df87faea4"
+    PAYSTACK_SECRET_KEY = os.environ.get("PAYSTACK_SECRET_KEY")
     url = f"https://api.paystack.co/transaction/verify/{reference}"
 
     headers = {

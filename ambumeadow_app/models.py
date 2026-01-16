@@ -221,7 +221,7 @@ class Product(models.Model):
         ("skin", "Skin Care"),
         ("supplements", "Supplements"),
     ]
-    
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, default=1)
     product_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)

@@ -4,7 +4,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from ambumeadow_app.models import Product, User, ProductOrder, Notification
+from ambumeadow_app.models import Product, User, ProductOrder, Notification, Payment
+from ambumeadow_app.utils.verify_paystack import verify_paystack_payment
 import json
 
 from . auth import verify_firebase_token
@@ -181,6 +182,8 @@ def create_order(request):
             user_id = data.get("user_id")
             latitude = data.get("latitude", 0.0)
             longitude = data.get("longitude", 0.0)
+            reference = request.data.get("payment_reference")
+            amount = request.data.get("amount")
             products = data.get("products", [])  # List of items
 
             if not user_id or not products:
@@ -189,6 +192,22 @@ def create_order(request):
             user = User.objects.filter(id=user_id).first()
             if not user:
                 return JsonResponse({"message": "User not found"}, status=404)
+            
+            # ================= VERIFY PAYMENT =================
+            paystack_response = verify_paystack_payment(reference)
+
+            if not paystack_response.get("status"):
+                return Response({"error": "Payment verification failed"}, status=400)
+
+            data = paystack_response.get("data")
+
+            if data["status"] != "success":
+                return Response({"error": "Payment not successful"}, status=400)
+
+            paid_amount = data["amount"] / 100  # convert from kobo/cents
+
+            if float(paid_amount) != float(amount):
+                return Response({"error": "Amount mismatch"}, status=400)
 
             order_ids = []
             for item in products:
@@ -206,6 +225,19 @@ def create_order(request):
 
                 if quantity > product.quantity:
                     return JsonResponse({"message": f"Not enough stock for {product.product_name}"}, status=400)
+                
+                # ================= SAVE PAYMENT =================
+                payment = Payment.objects.create(
+                    user=user,
+                    hospital=product.hospital,
+                    service_type="merchandise",
+                    amount=amount,
+                    method="paystack",
+                    transaction_reference=reference,
+                    receipt_number=data.get("reference"),
+                    status="paid",
+                    paid_at=timezone.now(),
+                )
 
                 # Create order
                 order = ProductOrder.objects.create(
