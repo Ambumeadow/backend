@@ -1,16 +1,9 @@
-import json
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from ambumeadow_app.models import User, Notification
-from . auth import verify_firebase_token
-from ambumeadow_app.serializers import NotificationSerializer
-from django.http import JsonResponse
+from .common_imports import *
 
 
 # get_notification api
 @api_view(['GET'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def get_user_notifications(request, user_id):
     try:
         user_id = User.objects.get(id=user_id)

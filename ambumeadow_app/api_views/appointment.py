@@ -1,11 +1,8 @@
-import json
-from rest_framework.decorators import api_view
-from django.http import JsonResponse
-
-from ambumeadow_app.models import User, Hospital, Staff, CareAppointment
+from .common_imports import *
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def schedule_care(request):
     try:
         data = json.loads(request.body)

@@ -1,15 +1,10 @@
-from . auth import verify_firebase_token
-from ambumeadow_app.models import User
-from django.http import JsonResponse
-from rest_framework.decorators import api_view, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
-from django.views.decorators.csrf import csrf_exempt
+from .common_imports import *
 
 # start of update user profile api
 @csrf_exempt
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def update_user_profile(request):
     try:
         user_id = request.data.get('user_id')

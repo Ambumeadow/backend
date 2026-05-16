@@ -1,24 +1,59 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 # -----------------------------
 # 1. User Model
 # -----------------------------
-class User(models.Model):
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, password=None, **extra_fields):
+        if not username:
+            raise ValueError("Username is required")
+        if not email:
+            raise ValueError("Email is required")
+
+        email = self.normalize_email(email)
+
+        user = self.model(
+            username=username,
+            email=email,
+            **extra_fields
+        )
+
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        return self.create_user(username, email, password, **extra_fields)
+
+class User(AbstractUser):
     full_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=100, default="johndoe@example.com")
+    username = models.CharField(max_length=150, unique=True)
     agreed = models.BooleanField(default=False)
-    firebase_uid = models.CharField(max_length=256, default="@Ambumeadow2025")
     current_lat = models.FloatField(null=True, blank=True, default=0.0)
     current_lng = models.FloatField(null=True, blank=True, default=0.0)
     phone_verified = models.BooleanField(default=False)
+    email_verified = models.BooleanField(default=False)
+    email_verification_token = models.CharField(max_length=255, null=True, blank=True)
+    reset_token = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_expiry = models.DateTimeField(null=True, blank=True)
-    profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    profile_image = models.URLField(default="https://res.cloudinary.com/dc68huvjj/image/upload/v1748102584/kwwwa0avlfoeybpi3key.png")
     date_joined = models.DateTimeField(default=timezone.now)
-    expo_token = models.CharField(max_length=100, default="hsvsx92jjs")
+    expo_token = models.CharField(max_length=100, default="hsvsx92jjs", null=True, blank=True)
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
+
+    objects = UserManager()
 
     def __str__(self):
         return f"#{self.id} {self.full_name} Date joined: {self.date_joined} {self.is_active}"
@@ -49,7 +84,7 @@ class Driver(models.Model):
     agreed = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_expiry = models.DateTimeField(null=True, blank=True)
-    profile_image = models.URLField(blank=True, null=True, default='')
+    profile_image = models.URLField(default="https://res.cloudinary.com/dc68huvjj/image/upload/v1748102584/kwwwa0avlfoeybpi3key.png")
     expo_token = models.CharField(max_length=100, default="hsvsx92jjs")
     date_joined = models.DateTimeField(default=timezone.now)
 
@@ -60,51 +95,40 @@ class Driver(models.Model):
 class Staff(models.Model):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
-        ('superadmin', 'SuperAdmin'),
         ('doctor', 'Doctor'),
         ('nurse', 'Nurse'),
-        ('pharmacist', 'Pharmacist'),
-        ('lab_technician', 'Lab Technician'),
-        ('receptionist', 'Receptionist'),
-        ('driver', 'Driver'),
-        ('other', 'Other'),
     ]
+
     STATUS = [
         ('active', 'Active'),
         ('busy', 'Busy'),
         ('inactive', 'Inactive'),
-        ('suspended', 'Suspended'),
     ]
+
     DEPARTMENT = [
         ('cardiology', 'Cardiology'),
         ('neurology', 'Neurology'),
-        ('orthopedics', 'Orthopedics'),
-        ('pediatrics', 'Pediatrics'),
-        ('emergency', 'Emergency'),
-        ('radiology', 'Radiology'),
-        ('general_medicine', 'General Medicine'),
-        ('surgery', 'Surgery'),
         ('other', 'Other'),
     ]
-    full_name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=20, unique=True)
-    email = models.CharField(max_length=100, default="johndoe@example.com")
-    id_number = models.CharField(max_length=8, default='12345678')
-    medical_license_number = models.CharField(max_length=50, unique=True, null=True, blank=True)
-    department = models.CharField(max_length=100, choices=DEPARTMENT, default='other')
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='other')
-    status = models.CharField(max_length=20, choices=STATUS, default='active')
-    firebase_uid = models.CharField(max_length=256, default="@Ambumeadow2025")
-    phone_verified = models.BooleanField(default=False)
-    agreed = models.BooleanField(default=False)
-    otp = models.CharField(max_length=6, null=True, blank=True)
-    otp_expiry = models.DateTimeField(null=True, blank=True)
-    profile_image = models.URLField(blank=True, null=True, default='')
-    expo_token = models.CharField(max_length=100, default="hsvsx92jjs")
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff_profile')
+
+    hospital = models.ForeignKey(Hospital,on_delete=models.CASCADE,null=True,blank=True)
+
+    id_number = models.CharField(max_length=20)
+
+    medical_license_number = models.CharField(max_length=50,unique=True,null=True,blank=True)
+
+    department = models.CharField(max_length=100,choices=DEPARTMENT,default='other')
+
+    role = models.CharField(max_length=20,choices=ROLE_CHOICES,default='other')
+
+    status = models.CharField(max_length=20,choices=STATUS,default='active')
+
     date_joined = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.id} - {self.full_name} Date joined: ({self.date_joined})"
+        return f"{self.user.full_name} - {self.role}"
 
 # patient model link to user
 class Patient(models.Model):
@@ -227,7 +251,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
-    image = models.ImageField(upload_to='products/', null=True, blank=True)
+    image = models.URLField(default="https://res.cloudinary.com/dc68huvjj/image/upload/v1748102584/kwwwa0avlfoeybpi3key.png")
     requires_prescription = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     expiry_date = models.DateField(null=True, blank=True, default=timezone.now)

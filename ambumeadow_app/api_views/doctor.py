@@ -1,12 +1,8 @@
-from rest_framework.decorators import api_view
-from django.http import JsonResponse
-
-from ambumeadow_app.models import Staff
-from . auth import verify_firebase_token
+from .common_imports import *
 
 
 @api_view(['GET'])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def get_active_doctors(request):
     try:
         doctors = Staff.objects.filter(

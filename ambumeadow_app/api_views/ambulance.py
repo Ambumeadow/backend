@@ -1,26 +1,9 @@
-import json
-from rest_framework import status
-from rest_framework.decorators import api_view
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.response import Response
-from ambumeadow_app.models import Hospital, Ambulance, AmbulanceBooking, Payment, User
-from . auth import verify_firebase_token
-from django.http import JsonResponse
-
-from . auth import verify_firebase_token
-
-from ambumeadow_app.api_serializers.ambulance import NearestAmbulanceSerializer
-from ambumeadow_app.utils.distance import haversine
-from ambumeadow_app.utils.verify_paystack import verify_paystack_payment
-
-import requests
-from django.conf import settings
-from django.utils import timezone
+from .common_imports import *
 
 # api to add ambulance
 @csrf_exempt
 @api_view(['POST'])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def add_ambulance(request):
     if request.method != 'POST':
         return JsonResponse({"message": "Invalid request method"}, status=405)
@@ -64,7 +47,7 @@ def add_ambulance(request):
 
 # api to get all ambulances
 @api_view(['GET'])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def get_all_ambulances(request):
     try:
         ambulances = Ambulance.objects.all().order_by('-date_joined')
@@ -98,7 +81,7 @@ def get_all_ambulances(request):
 
 # get nearest ambulance api
 @api_view(["POST"])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def get_nearest_ambulances(request):
     """
     Expects:
@@ -155,7 +138,7 @@ def get_nearest_ambulances(request):
 
 # delete user
 @api_view(['DELETE'])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def delete_ambulance(request):
     ambulance_id = request.data.get('ambulance_id')
     try:
@@ -175,7 +158,7 @@ def delete_ambulance(request):
 
 # Update ambulance status
 @api_view(['PATCH'])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def toggle_ambulance_status(request):
     ambulance_id = request.data.get('ambulance_id')
     status = request.data.get('status')
@@ -197,7 +180,7 @@ def toggle_ambulance_status(request):
 
 # api to assign ambulance to driver
 @api_view(['PATCH'])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def assign_ambulance_to_driver(request):
     ambulance_id = request.data.get('ambulance_id')
     driver_id = request.data.get('driver_id')
@@ -223,7 +206,7 @@ def assign_ambulance_to_driver(request):
 
 # api to book ambulance
 @api_view(["POST"])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 @csrf_exempt
 def book_ambulance(request):
     user_id = request.data.get("user_id")

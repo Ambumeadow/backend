@@ -1,13 +1,8 @@
-from rest_framework.decorators import api_view
-from django.http import JsonResponse
-from django.utils import timezone
-
-from ambumeadow_app.models import Hospital
-from . auth import verify_firebase_token
+from .common_imports import *
 
 # api to add hospital
 @api_view(['POST'])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def add_hospital(request):
     hospital_name = request.data.get("hospital_name")
     email = request.data.get("email", "")
@@ -64,7 +59,7 @@ def add_hospital(request):
 
 # api to get all hospitals
 @api_view(['GET'])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def get_all_hospitals(request):
     try:
         hospitals = Hospital.objects.all().order_by('-date_joined')

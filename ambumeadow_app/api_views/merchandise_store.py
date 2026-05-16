@@ -1,19 +1,9 @@
-from rest_framework.decorators import api_view, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
-from django.http import JsonResponse
-from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
-
-from ambumeadow_app.models import Product, User, ProductOrder, Notification, Payment
-from ambumeadow_app.utils.verify_paystack import verify_paystack_payment
-import json
-
-from . auth import verify_firebase_token
+from .common_imports import *
 
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def add_product(request):
     product_name = request.data.get("product_name")
     description = request.data.get("description", "")
@@ -69,7 +59,7 @@ def add_product(request):
 
 # api to get all products
 @api_view(['GET'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def get_all_products(request):
     try:
         products = Product.objects.filter(is_active=True).order_by('-date_added')
@@ -108,7 +98,7 @@ def get_all_products(request):
 
 # api to update the product quantity and price
 @api_view(['PUT'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def update_product_stock(request):
     product_id = request.data.get("product_id")
     price = request.data.get("price")
@@ -174,7 +164,7 @@ def update_product_stock(request):
 # create  order api
 @csrf_exempt
 @api_view(['POST'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def create_order(request):
     if request.method == 'POST':
         try:

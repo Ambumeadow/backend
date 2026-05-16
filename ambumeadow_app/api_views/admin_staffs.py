@@ -1,16 +1,8 @@
-import json
-from rest_framework.decorators import api_view
-from django.http import JsonResponse
-from rest_framework.response import Response
-
-from ambumeadow_app.models import Staff
-from .auth import verify_firebase_token
-from firebase_admin import auth
-
+from .common_imports import *
 
 # api to get all staffs
 @api_view(['GET'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def get_all_staffs(request):
     staffs = Staff.objects.all()
     staff_data = []
@@ -32,7 +24,7 @@ def get_all_staffs(request):
 
 # delete staff
 @api_view(['DELETE'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def delete_staff(request):
     staff_id = request.data.get('staff_id')
     try:
@@ -57,7 +49,7 @@ def delete_staff(request):
 
 # Activate / Suspend staff
 @api_view(['PATCH'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def toggle_staff_status(request):
     staff_id = request.data.get('staff_id')
     status = request.data.get('status')

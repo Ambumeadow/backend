@@ -1,13 +1,4 @@
-import json
-from rest_framework import status
-from rest_framework.decorators import api_view
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.response import Response
-from ambumeadow_app.models import Driver, Hospital, DriverNotification
-from . auth import verify_firebase_token
-from django.http import JsonResponse
-
-from . auth import verify_firebase_token, authe
+from .common_imports import *
 
 
 
@@ -77,7 +68,7 @@ def driver_signup(request):
 
 # api to get all drivers
 @api_view(['GET'])
-# @verify_firebase_token
+@permission_classes([IsAuthenticated])
 def get_drivers(request, hospital_id):
 
     try:

@@ -1,15 +1,8 @@
-import json
-from rest_framework.decorators import api_view
-from django.http import JsonResponse
-from rest_framework.response import Response
-
-from ambumeadow_app.models import User
-from .auth import verify_firebase_token
-from firebase_admin import auth
+from .common_imports import *
 
 # api to get all users
 @api_view(['GET'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def get_all_users(request):
     users = User.objects.all()
     user_data = []
@@ -29,7 +22,7 @@ def get_all_users(request):
 
 # delete user
 @api_view(['DELETE'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def delete_user(request):
     user_id = request.data.get('user_id')
     try:
@@ -54,7 +47,7 @@ def delete_user(request):
 
 # Activate / Suspend user
 @api_view(['PATCH'])
-@verify_firebase_token
+@permission_classes([IsAuthenticated])
 def toggle_user_status(request):
     user_id = request.data.get('user_id')
     try:

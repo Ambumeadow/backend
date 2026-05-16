@@ -1,29 +1,31 @@
 from django.urls import path
 from . import views
-from .api_views.auth import signin, signup, staff_signin, staff_signup, verify_phone, delete_account, request_password_reset, refresh_token
-from .api_views.profile import update_user_profile
-from .api_views.notifications import get_user_notifications
-from .api_views.ambulance import add_ambulance, get_all_ambulances,  get_nearest_ambulances, delete_ambulance, toggle_ambulance_status, book_ambulance
-from .api_views.hospital import  add_hospital, get_all_hospitals
-from .api_views.merchandise_store import add_product, get_all_products, update_product_stock, create_order
-from .api_views.doctor import get_active_doctors
-from .api_views.appointment import  schedule_care
-from .api_views.admin import get_all_users, delete_user, toggle_user_status
-from .api_views.admin_staffs import get_all_staffs, delete_staff, toggle_staff_status
-from .api_views.driver import driver_signup, get_drivers
+from .api_views.auth import *
+from .api_views.profile import *
+from .api_views.notifications import *
+from .api_views.ambulance import *
+from .api_views.hospital import *
+from .api_views.merchandise_store import *
+from .api_views.doctor import *
+from .api_views.appointment import *
+from .api_views.admin import *
+from .api_views.admin_staffs import *
+from .api_views.driver import *
+from .api_views.user import *
 
 
 urlpatterns = [
     path('', views.index, name='index'),
-
+    path('send_test_email/', send_test_email, name='send_test_email'),
     path('refresh_token/', refresh_token, name='refresh_token'),
     path('signin/', signin, name='signin'),
     path('staff_signin/', staff_signin, name='staff_signin'),
     path('signup/', signup, name='signup'),
     path('staff_signup/', staff_signup, name='staff_signup'),
-    path('verify_phone/', verify_phone, name='verify_phone'),
     path('delete_account/', delete_account, name='delete_account'),
-    path('request_password_reset/', request_password_reset, name='request_password_reset'),
+    path('verify_email/', verify_email, name='verify_email'),
+    path('request_reset/', request_reset, name='request_reset'),
+    path('reset_password/', reset_password, name='reset_password'),
 
     path('get_user_notifications/<int:user_id>/', get_user_notifications, name='get_user_notifications'),
     path('update_user_profile/', update_user_profile, name='update_user_profile'),
@@ -58,5 +60,8 @@ urlpatterns = [
     # driver apis
     path('driver_signup/', driver_signup, name='driver_signup'),
     path('get_drivers/<int:hospital_id>/', get_drivers, name='get_drivers'),
+
+    # user apis
+    path('send_expo_token/<str:expo_token>/', send_expo_token, name='send_expo_token'),
 
 ]
