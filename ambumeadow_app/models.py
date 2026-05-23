@@ -321,14 +321,20 @@ class AmbulanceBooking(models.Model):
 
 # care appointment model
 class CareAppointment(models.Model):
+    STATUS_CHOICES = [
+        ('scheduled', 'Scheduled'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
-    doctor = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    doctor = models.ForeignKey(Staff, on_delete=models.CASCADE, null=True, blank=True)
     care_type = models.CharField(max_length=100)
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
     notes = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, default='scheduled')
+    home_address = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
     date_created = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

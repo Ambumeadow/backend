@@ -77,7 +77,7 @@ def get_all_products(request):
                 "category": product.category,
                 "price": str(product.price),
                 "quantity": product.quantity,
-                "image_url": product.image.url if product.image else None,
+                "image_url": product.image if product.image else None,
                 "requires_prescription": product.requires_prescription,
                 "is_active": product.is_active,
                 "date_added": product.date_added.strftime("%Y-%m-%d %H:%M:%S"),
@@ -184,20 +184,20 @@ def create_order(request):
                 return JsonResponse({"message": "User not found"}, status=404)
             
             # ================= VERIFY PAYMENT =================
-            paystack_response = verify_paystack_payment(reference)
+            # paystack_response = verify_paystack_payment(reference)
 
-            if not paystack_response.get("status"):
-                return Response({"error": "Payment verification failed"}, status=400)
+            # if not paystack_response.get("status"):
+            #     return Response({"error": "Payment verification failed"}, status=400)
 
-            data = paystack_response.get("data")
+            # data = paystack_response.get("data")
 
-            if data["status"] != "success":
-                return Response({"error": "Payment not successful"}, status=400)
+            # if data["status"] != "success":
+            #     return Response({"error": "Payment not successful"}, status=400)
 
-            paid_amount = data["amount"] / 100  # convert from kobo/cents
+            # paid_amount = data["amount"] / 100  # convert from kobo/cents
 
-            if float(paid_amount) != float(amount):
-                return Response({"error": "Amount mismatch"}, status=400)
+            # if float(paid_amount) != float(amount):
+            #     return Response({"error": "Amount mismatch"}, status=400)
 
             order_ids = []
             for item in products:
@@ -224,7 +224,8 @@ def create_order(request):
                     amount=amount,
                     method="paystack",
                     transaction_reference=reference,
-                    receipt_number=data.get("reference"),
+                    # receipt_number=data.get("reference"),
+                    receipt_number=reference,
                     status="paid",
                     paid_at=timezone.now(),
                 )

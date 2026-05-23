@@ -66,4 +66,7 @@ urlpatterns = [
     # user apis
     path('send_expo_token/<str:expo_token>/', send_expo_token, name='send_expo_token'),
 
+    # appointment apis
+    path('get_my_appointments/', get_my_appointments, name='get_my_appointments'),
+
 ]
