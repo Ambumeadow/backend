@@ -27,7 +27,7 @@ urlpatterns = [
     path('request_reset/', request_reset, name='request_reset'),
     path('reset_password/', reset_password, name='reset_password'),
 
-    path('get_user_notifications/<int:user_id>/', get_user_notifications, name='get_user_notifications'),
+    path('get_user_notifications/', get_user_notifications, name='get_user_notifications'),
     path('update_user_profile/', update_user_profile, name='update_user_profile'),
 
     path('add_ambulance/', add_ambulance, name='add_ambulance'),

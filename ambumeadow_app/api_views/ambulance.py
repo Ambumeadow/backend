@@ -83,13 +83,6 @@ def get_all_ambulances(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def get_nearest_ambulances(request):
-    """
-    Expects:
-    {
-        "latitude": -1.2921,
-        "longitude": 36.8219
-    }
-    """
 
     lat = request.data.get("latitude")
     lng = request.data.get("longitude")
