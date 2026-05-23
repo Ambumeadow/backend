@@ -49,3 +49,39 @@ def get_user_notifications(request):
             "message": "Failed to fetch notifications",
             "error": str(e)
         }, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_messages(request, doctor_id):
+    messages = Chat.objects.filter(
+        doctor_id=doctor_id,
+        patient=request.user
+    ).order_by('created_at')
+
+    data = []
+
+    for msg in messages:
+        data.append({
+            "id": msg.id,
+            "text": msg.message,
+            "sender": msg.sender_type,  # "patient" or "doctor"
+            "created_at": msg.created_at
+        })
+
+    return Response({"messages": data})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_message(request):
+    doctor_id = request.data.get("doctor_id")
+    message = request.data.get("message")
+
+    chat = Chat.objects.create(
+        doctor_id=doctor_id,
+        patient=request.user,
+        message=message,
+        sender_type="patient"
+    )
+
+    return Response({"success": True})

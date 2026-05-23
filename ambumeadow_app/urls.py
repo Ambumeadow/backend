@@ -29,6 +29,8 @@ urlpatterns = [
 
     path('get_user_notifications/', get_user_notifications, name='get_user_notifications'),
     path('update_user_profile/', update_user_profile, name='update_user_profile'),
+    path('get_messages/<int:doctor_id>/', get_messages, name='get_messages'),
+    path('send_message/', send_message, name='send_message'),
 
     path('add_ambulance/', add_ambulance, name='add_ambulance'),
     path('get_all_ambulances/', get_all_ambulances, name='get_all_ambulances'),

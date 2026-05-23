@@ -333,3 +333,19 @@ class CareAppointment(models.Model):
 
     def __str__(self):
         return f"{self.user.full_name} - {self.care_type}"
+
+# chat model for doctor-patient communication
+class Chat(models.Model):
+    SENDER_TYPES = [
+        ("patient", "Patient"),
+        ("doctor", "Doctor"),
+    ]
+    doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="doctor_chats")
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="patient_chats")
+    message = models.TextField()
+    sender_type = models.CharField(max_length=10, choices=SENDER_TYPES)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.sender_type}: {self.message[:30]}"

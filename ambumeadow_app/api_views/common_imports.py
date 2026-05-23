@@ -76,6 +76,7 @@ from ambumeadow_app.models import (
     Staff,
     StaffNotification,
     User,
+    Chat,
 )
 
 from ambumeadow_app.serializers import NotificationSerializer
