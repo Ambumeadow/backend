@@ -339,6 +339,27 @@ def refresh_token(request):
     except Exception:
         return JsonResponse({"message": "Invalid refresh token"}, status=401)
 
+# check authentication status api
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def auth_check(request):
+
+    user = request.user
+
+    return JsonResponse({
+        "authenticated": True,
+        "user": {
+            "user_id": user.id,
+            "user_name": user.full_name,
+            "user_email": user.email,
+            "phone_number":user.phone_number,
+            "phone_verified": user.phone_verified,
+            "profile_image":user.profile_image,
+            "date_joined": user.date_joined.strftime("%Y-%m-%d %H:%M:%S"),
+            "profile_image": user.profile_image,
+            }
+    })
+
 # delete account api
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])

@@ -26,6 +26,7 @@ urlpatterns = [
     path('verify_email/', verify_email, name='verify_email'),
     path('request_reset/', request_reset, name='request_reset'),
     path('reset_password/', reset_password, name='reset_password'),
+    path('auth_check/', auth_check, name='auth_check'),
 
     path('get_user_notifications/', get_user_notifications, name='get_user_notifications'),
     path('update_user_profile/', update_user_profile, name='update_user_profile'),
