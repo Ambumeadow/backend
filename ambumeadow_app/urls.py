@@ -32,6 +32,9 @@ urlpatterns = [
     path('update_user_profile/', update_user_profile, name='update_user_profile'),
     path('get_messages/<int:doctor_id>/', get_messages, name='get_messages'),
     path('send_message/', send_message, name='send_message'),
+    path("get_patient_summary/", get_patient_summary, name="get_patient_summary"),
+    path("get_medical_records/", get_medical_records, name="get_medical_records"),
+    path("create_medical_record/",create_medical_record, name="create_medical_record"),
 
     path('add_ambulance/', add_ambulance, name='add_ambulance'),
     path('get_all_ambulances/', get_all_ambulances, name='get_all_ambulances'),
