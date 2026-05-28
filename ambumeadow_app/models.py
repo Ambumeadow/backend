@@ -355,3 +355,28 @@ class Chat(models.Model):
 
     def __str__(self):
         return f"{self.sender_type}: {self.message[:30]}"
+
+# package model for subscription plans
+class Package(models.Model):
+    name = models.CharField(max_length=100)
+    maximum_members = models.IntegerField()
+    no_of_consultations = models.IntegerField()
+    access_telemedicine = models.BooleanField(default=False)
+    book_ambulance = models.BooleanField(default=False)
+    book_care_appointment = models.BooleanField(default=False)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    date_added = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.name} {self.price}"
+
+# subscription model for users subscribing to packages
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    package = models.ForeignKey(Package, on_delete=models.CASCADE)
+    start_date = models.DateTimeField(default=timezone.now)
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.user.full_name} subscribed to {self.package.name}"

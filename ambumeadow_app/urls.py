@@ -35,6 +35,9 @@ urlpatterns = [
     path("get_patient_summary/", get_patient_summary, name="get_patient_summary"),
     path("get_medical_records/", get_medical_records, name="get_medical_records"),
     path("create_medical_record/",create_medical_record, name="create_medical_record"),
+    path("get_user_subscription/", get_user_subscription, name="get_user_subscription"),
+    path("get_packages/", get_packages, name="get_packages"),
+    path("subscribe_package/", subscribe_package, name="subscribe_package"),
 
     path('add_ambulance/', add_ambulance, name='add_ambulance'),
     path('get_all_ambulances/', get_all_ambulances, name='get_all_ambulances'),

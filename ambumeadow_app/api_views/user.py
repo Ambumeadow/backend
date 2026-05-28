@@ -216,3 +216,111 @@ def create_medical_record(request):
             "success": False,
             "message": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# =========================================
+# GET USER SUBSCRIPTION
+# =========================================
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_user_subscription(request):
+    try:
+        subscription = Subscription.objects.filter(
+            user=request.user,
+            is_active=True
+        ).latest("start_date")
+
+        data = {
+            "id": subscription.id,
+            "package_name": subscription.package.name,
+            "maximum_members": subscription.package.maximum_members,
+            "no_of_consultations": subscription.package.no_of_consultations,
+            "access_telemedicine": subscription.package.access_telemedicine,
+            "book_ambulance": subscription.package.book_ambulance,
+            "book_care_appointment": subscription.package.book_care_appointment,
+            "price": subscription.package.price,
+            "start_date": subscription.start_date,
+            "end_date": subscription.end_date,
+            "is_active": subscription.is_active,
+        }
+
+        return Response({
+            "success": True,
+            "subscription": data
+        })
+
+    except Subscription.DoesNotExist:
+        return Response({
+            "success": False,
+            "message": "No active subscription"
+        })
+
+
+# =========================================
+# GET PACKAGES
+# =========================================
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_packages(request):
+
+    packages = Package.objects.all().order_by("price")
+
+    data = []
+
+    for package in packages:
+        data.append({
+            "id": package.id,
+            "name": package.name,
+            "maximum_members": package.maximum_members,
+            "no_of_consultations": package.no_of_consultations,
+            "access_telemedicine": package.access_telemedicine,
+            "book_ambulance": package.book_ambulance,
+            "book_care_appointment": package.book_care_appointment,
+            "price": package.price,
+        })
+
+    return Response({
+        "success": True,
+        "packages": data
+    })
+
+
+# =========================================
+# SUBSCRIBE TO PACKAGE
+# =========================================
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def subscribe_package(request):
+    try:
+        package_id = request.data.get("package_id")
+
+        package = Package.objects.get(id=package_id)
+
+        # deactivate previous subscriptions
+        Subscription.objects.filter(
+            user=request.user,
+            is_active=True
+        ).update(is_active=False)
+
+        start_date = timezone.now()
+        end_date = start_date + timedelta(days=30)
+
+        subscription = Subscription.objects.create(
+            user=request.user,
+            package=package,
+            start_date=start_date,
+            end_date=end_date,
+            is_active=True
+        )
+
+        return Response({
+            "success": True,
+            "message": f"Subscribed to {package.name}",
+            "subscription_id": subscription.id
+        })
+
+    except Package.DoesNotExist:
+        return Response({
+            "success": False,
+            "message": "Package not found"
+        }, status=status.HTTP_404_NOT_FOUND)
