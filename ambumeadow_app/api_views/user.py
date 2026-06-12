@@ -271,6 +271,7 @@ def get_packages(request):
         data.append({
             "id": package.id,
             "name": package.name,
+            "category": package.category,
             "maximum_members": package.maximum_members,
             "no_of_consultations": package.no_of_consultations,
             "access_telemedicine": package.access_telemedicine,

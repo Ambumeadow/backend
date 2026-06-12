@@ -358,7 +358,18 @@ class Chat(models.Model):
 
 # package model for subscription plans
 class Package(models.Model):
-    name = models.CharField(max_length=100)
+    NAMES = [
+        ("family", "Family"),
+        ("individual", "Individual"),
+    ]
+    CATEGORIES = [
+        ("bronze", "Bronze"),
+        ("silver", "Silver"),
+        ("gold", "Gold"),
+        ("platinum", "Platinum"),
+    ]
+    name = models.CharField(max_length=100, choices=NAMES, default="Individual")
+    category = models.CharField(max_length=100, choices=CATEGORIES, default="Bronze")
     maximum_members = models.IntegerField()
     no_of_consultations = models.IntegerField()
     access_telemedicine = models.BooleanField(default=False)
