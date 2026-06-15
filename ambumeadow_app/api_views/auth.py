@@ -474,6 +474,7 @@ def staff_signup(request):
         full_name = data.get("full_name", "").strip()
         id_number = data.get("id_number")
         medical_license_number = data.get("medical_license_number")
+        hospital_id = data.get("hospital_id")
         department = data.get("department")
         role = data.get("role")
         phone_number = data.get("phone_number")
@@ -528,9 +529,14 @@ def staff_signup(request):
             email_verified=False,
         )
 
+        hospital = Hospital.objects.get(id=hospital_id)
+        if not hospital:
+            return JsonResponse({"message": "Hospital not found"}, status=404)
+
         # Create staff profile
         staff = Staff.objects.create(
             user=user,
+            hospital=hospital,
             id_number=id_number,
             medical_license_number=medical_license_number,
             department=department,
@@ -538,7 +544,7 @@ def staff_signup(request):
         )
 
         # Verification link
-        link = f"https://backend-nfsd.onrender.com/verify_email?token={token}"
+        link = f"http://192.168.100.12:8000/verify_email?token={token}"
 
         # Send verification email
         send_email(

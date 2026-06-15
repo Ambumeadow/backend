@@ -60,6 +60,7 @@ urlpatterns = [
 
     # admin apis
     path('get_all_users/', get_all_users, name='get_all_users'),
+    path('get_all_doctors/', get_all_doctors, name='get_all_doctors'),
     path('delete_user/', delete_user, name='delete_user'),
     path('toggle_user_status/', toggle_user_status, name='toggle_user_status'),
     path('get_all_staffs/', get_all_staffs, name='get_all_staffs'),
