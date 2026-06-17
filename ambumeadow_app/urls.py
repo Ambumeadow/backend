@@ -12,6 +12,7 @@ from .api_views.admin import *
 from .api_views.admin_staffs import *
 from .api_views.driver import *
 from .api_views.user import *
+from .api_views.packages import *
 
 
 urlpatterns = [
@@ -61,6 +62,9 @@ urlpatterns = [
     # admin apis
     path('get_all_users/', get_all_users, name='get_all_users'),
     path('get_all_doctors/', get_all_doctors, name='get_all_doctors'),
+    path('get_all_nurses/', get_all_nurses, name='get_all_nurses'),
+    path('get_all_appointments/', get_all_appointments, name='get_all_appointments'),
+    path('get_all_payments/', get_all_payments, name='get_all_payments'),
     path('delete_user/', delete_user, name='delete_user'),
     path('toggle_user_status/', toggle_user_status, name='toggle_user_status'),
     path('get_all_staffs/', get_all_staffs, name='get_all_staffs'),
@@ -76,5 +80,18 @@ urlpatterns = [
 
     # appointment apis
     path('get_my_appointments/', get_my_appointments, name='get_my_appointments'),
+
+    # drugs -merchandise store
+    path('get_all_drugs/', get_all_drugs, name='get_all_drugs'),
+    path('add_drug/', add_drug, name='add_drug'),
+    path('update_drug/<int:drug_id>/', update_drug, name='update_drug'),
+    path('delete_drug/<int:drug_id>/', delete_drug, name='delete_drug'),
+    path('get_product_orders/', get_product_orders, name='get_product_orders'),
+
+    # packages
+    path("get_packages/", get_packages, name='get_packages'),
+    path("create_package/", create_package, name='create_package'),
+    path("update_package/<int:package_id>/", update_package, name='update_package'),
+    path("delete_package/<int:package_id>/", delete_package, name='delete_package'),
 
 ]

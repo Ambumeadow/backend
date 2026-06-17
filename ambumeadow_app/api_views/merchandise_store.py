@@ -260,3 +260,185 @@ def create_order(request):
             return JsonResponse({"message": "An error occurred", "error": str(e)}, status=500)
 
 # endof create order api
+
+
+
+# drugs apis
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_drugs(request):
+    drugs = Product.objects.all().order_by('-date_added')
+
+    drug_data = []
+
+    for drug in drugs:
+        drug_data.append({
+            "id": drug.id,
+            "name": drug.product_name,
+            "description": drug.description,
+            "price": float(drug.price),
+            "quantity": float(drug.quantity),
+            "category": drug.category,
+            "image": drug.image,
+            "requires_prescription": drug.requires_prescription,
+            "is_active": drug.is_active,
+            "expiry_date": drug.expiry_date,
+            "hospital": drug.hospital.hospital_name,
+        })
+
+    inventory_value = (
+        sum(float(drug.price) * float(drug.quantity)
+        for drug in drugs)
+    )
+
+    low_stock = drugs.filter(quantity__lte=10).count()
+
+    return JsonResponse({
+        "total_drugs": drugs.count(),
+        "low_stock": low_stock,
+        "inventory_value": inventory_value,
+        "drugs": drug_data
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_drug(request):
+    try:
+        product = Product.objects.create(
+            hospital_id=request.data.get("hospital_id"),
+            product_name=request.data.get("product_name"),
+            description=request.data.get("description"),
+            price=request.data.get("price"),
+            quantity=request.data.get("quantity"),
+            category=request.data.get("category"),
+            image=request.data.get("image"),
+            requires_prescription=request.data.get(
+                "requires_prescription",
+                False
+            ),
+            expiry_date=request.data.get("expiry_date")
+        )
+
+        return JsonResponse({
+            "success": True,
+            "message": "Drug added successfully",
+            "drug_id": product.id
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=400)
+
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_drug(request, drug_id):
+    try:
+        drug = Product.objects.get(id=drug_id)
+
+        drug.product_name = request.data.get(
+            "product_name",
+            drug.product_name
+        )
+
+        drug.description = request.data.get(
+            "description",
+            drug.description
+        )
+
+        drug.price = request.data.get(
+            "price",
+            drug.price
+        )
+
+        drug.quantity = request.data.get(
+            "quantity",
+            drug.quantity
+        )
+
+        drug.category = request.data.get(
+            "category",
+            drug.category
+        )
+
+        drug.expiry_date = request.data.get(
+            "expiry_date",
+            drug.expiry_date
+        )
+
+        drug.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Drug updated successfully"
+        })
+
+    except Product.DoesNotExist:
+        return JsonResponse({
+            "success": False,
+            "message": "Drug not found"
+        }, status=404)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_drug(request, drug_id):
+    try:
+        drug = Product.objects.get(id=drug_id)
+
+        drug.delete()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Drug deleted successfully"
+        })
+
+    except Product.DoesNotExist:
+        return JsonResponse({
+            "success": False,
+            "message": "Drug not found"
+        }, status=404)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_product_orders(request):
+    orders = ProductOrder.objects.select_related(
+        'product_id',
+        'user_id'
+    ).order_by('-created_at')
+
+    order_data = []
+
+    total_sales = 0
+
+    for order in orders:
+        total = float(order.price) * order.quantity
+
+        total_sales += total
+
+        order_data.append({
+            "id": order.id,
+            "patient_name": order.user_id.full_name,
+            "phone_number": order.user_id.phone_number,
+            "product_name": order.product_id.product_name,
+            "quantity": order.quantity,
+            "price": float(order.price),
+            "total": total,
+            "delivered": order.delivered,
+            "latitude": order.latitude,
+            "longitude": order.longitude,
+            "created_at": order.created_at,
+        })
+
+    return JsonResponse({
+        "total_orders": orders.count(),
+        "total_sales": total_sales,
+        "orders": order_data
+    })
+

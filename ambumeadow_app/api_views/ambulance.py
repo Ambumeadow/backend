@@ -47,7 +47,7 @@ def add_ambulance(request):
 
 # api to get all ambulances
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def get_all_ambulances(request):
     try:
         ambulances = Ambulance.objects.all().order_by('-date_joined')
@@ -58,7 +58,8 @@ def get_all_ambulances(request):
                 "id": ambulance.id,
                 "plate_number": ambulance.plate_number,
                 "hospital": ambulance.hospital.hospital_name,
-                "driver": ambulance.driver.full_name if ambulance.driver else "Unassigned",
+                "driver_name": ambulance.driver.full_name if ambulance.driver else "Unassigned",
+                "driver_phone": ambulance.driver.phone_number,
                 "latitude": ambulance.current_lat,
                 "longitude": ambulance.current_lng,
                 "status": ambulance.status,
@@ -66,7 +67,7 @@ def get_all_ambulances(request):
             })
 
         return JsonResponse({
-            "count": len(ambulance_list),
+            "total_ambulances": len(ambulance_list),
             "ambulances": ambulance_list
         }, status=200)
 
