@@ -24,14 +24,14 @@ def send_push_notification(token, title, body, data=None):
 
 
 # helper function to help sending emails
-resend.api_key = os.environ.get("SENDGRID_API_KEY")
+resend.api_key = os.environ.get("RESEND_API_KEY")
 
 def send_email(to_email, subject, html):
     # Debugging logs (similar to your example)
-    print(f"Resend from email: {os.environ.get('SENDGRID_FROM_EMAIL')}")
+    print(f"Resend from email: {os.environ.get('RESEND_FROM_EMAIL')}")
     
     params = {
-        "from": os.environ.get("SENDGRID_FROM_EMAIL"), # e.g., "support@vincab.services"
+        "from": os.environ.get("RESEND_FROM_EMAIL"), # e.g., "support@vincab.services"
         "to": [to_email],
         "subject": subject,
         "html": html,

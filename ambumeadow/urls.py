@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', include('ambumeadow_app.urls')),
+    path('api/v1/', include('ambumeadow_app.urls')),
     path('admin/', admin.site.urls),
 ]
 if settings.DEBUG:
